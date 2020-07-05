@@ -1,0 +1,31 @@
+<script src='https://maps.googleapis.com/maps/api/js?key=%GMAPS_KEY%'></script>
+<script>
+    var geocoder = new google.maps.Geocoder()
+    function reverseGeocode() {
+      var loc = new google.maps.LatLng( %LAT% , %LNG% )
+      geocoder.geocode({ 'location': loc }, function(results, status) {
+        if (status === 'OK') { document.getElementById('AddrField').textContent = results[0].formatted_address }})
+    }
+    window.onload = reverseGeocode
+</script>
+<h3>Location</h3>
+<table style='padding-right: 10px'>
+  <tr> <td colspan=2><span id='AddrField'></span></td> </tr>
+  <tr> <td>Latitude</td> <td>Longitude</td>  </tr>
+  <tr> <td>%LAT%</td> <td>%LNG%</td> </tr>
+</table>
+<a href='https://www.google.com/maps/?q=%LAT%,%LNG%' target='_BLANK'>
+  <i class='fa fa-map-marker' style='color:red'></i> Map It!</a><br>
+<hr>
+<h3>Weather Data</h3>
+<table style='padding-right: 10px'>
+  <tr> <td>Temperature: </td>      <td>%TEMP%</td> </tr>
+  <tr> <td>Humidity: </td>         <td>%HUMI%</td> </tr>
+  <tr> <td>Barometer (abs): </td>  <td>%BARO%</td> </tr>
+  <tr> <td>Barometer (rel): </td>  <td>%RELP%</td> </tr>
+  <tr> <td>Heat Index: </td>       <td>%HTIN%</td> </tr>
+  <tr> <td>Dew Point: </td>        <td>%DWPT%</td> </tr>
+  <tr> <td>Dew Point Spread: </td> <td>%DPSP%</td> </tr>
+  <tr> <td>Voltage: </td>          <td>%VLTG%</td> </tr>
+  <tr> <td>Timestamp: </td>        <td>%TMST%</td> </tr>
+</table>
