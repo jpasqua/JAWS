@@ -39,6 +39,9 @@ namespace JAWSBlynk {
   void update() {
     if (!connectedToBlynk) return;
     Log.trace("About to update Blynk...");
+    float voltage = WebThing::measureVoltage();
+    if (voltage == -1) voltage = 5.0;
+
     Blynk.virtualWrite(BlynkTempPin,        JAWS::outputTemp(JAWS::bme.measuredTemp));
     Blynk.virtualWrite(BlynkHumidityPin,    JAWS::bme.measuredHumi);
     Blynk.virtualWrite(BlynkPressurePin,    JAWS::outputBaro(JAWS::bme.measuredBaro));
@@ -46,7 +49,7 @@ namespace JAWSBlynk {
     Blynk.virtualWrite(BlynkDewPointPin,    JAWS::outputTemp(JAWS::bme.dewPointTemp));
     Blynk.virtualWrite(BlynkDewSpreadPin,   JAWS::tempSpread(JAWS::bme.dewPointSpread));
     Blynk.virtualWrite(BlynkHeatIndexPin,   JAWS::outputTemp(JAWS::bme.heatIndex));
-    Blynk.virtualWrite(BlynkVoltagePin,     WebThing::measureVoltage());
+    Blynk.virtualWrite(BlynkVoltagePin,     voltage);
     if (timeStatus() == timeSet) {
       char *dateTime = JAWS::bmeTimestamp();
       Log.verbose("Timestamp sent to Blynk: %s", dateTime);

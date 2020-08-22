@@ -19,8 +19,10 @@
 #include <WebUI.h>
 //                                  Local Includes
 #include "JAWS.h"
+#include "HWConfig.h"
 #include "JawsWebUI.h"
 #include "JAWSBlynk.h"
+#include "src/gui/GUI.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
@@ -34,7 +36,9 @@ namespace JAWS {
   time_t timeOfBMEReading = 0;
 
   JAWSSettings settings;
-  static const String Version = "0.2.0";
+  String SSID = "";
+
+  static const String Version = "0.3.0";
 
   namespace Internal {
     static const String   SettingsFileName = "/settings.json";
@@ -44,13 +48,15 @@ namespace JAWS {
       // specific values. Rather than make the user configure them, set them to the
       // right values here.
       WebThing::settings.sleepOverridePin = 13;     // D7
-      WebThing::settings.hasVoltageSensing = true;
+      // WebThing::settings.hasVoltageSensing = true;
       if (WebThing::settings.hostname.isEmpty()) WebThing::settings.hostname = ("jaws" + String(ESP.getChipId(), HEX));
     }
 
     void flushBeforeSleep() { JAWSBlynk::disconnect(); }
 
-    void prepIO() { Log.verbose("No further I/O prep required"); }
+    void prepIO() {
+      Wire.begin(SDA_PIN, SCL_PIN);
+    }
 
     void prepWebUI() {
       WebThing::setup();
@@ -60,6 +66,10 @@ namespace JAWS {
 
     void baseConfigChange() { WebUI::setTitle(settings.description+" ("+WebThing::settings.hostname+")"); }
 
+    void configModeCallback(String &ssid, String &ip) {
+      (void)ip; // We don't use this parameter - avoid a warning
+      SSID = ssid;
+    }
   } // ----- END: JAWS::Internal namespace
 
   /*------------------------------------------------------------------------------
@@ -84,6 +94,7 @@ namespace JAWS {
     bme.takeReadings();
     timeOfBMEReading = now();
     JAWSBlynk::update();
+    if (settings.hasGUI) GUI::noteNewSample(outputTemp(bme.measuredTemp));
   }
 
 } // ----- END: JAWS namespace
@@ -105,17 +116,20 @@ void setup() {
   WebThing::preSetup();             // Setup the WebThing - Must be first
   WebThing::setDisplayedVersion(Version);
 
-  settings.init(                    // Initialize and then...
-    Internal::SettingsFileName);  
-  settings.read();                  // read the settings
-  Internal::ensureWebThingSettings();         // Override any pertinent settings in WebThing
-
-  WebThing::notifyConfigChange(Internal::baseConfigChange);
-                                    // If the WebThing config changes, let us know
-
-  Internal::prepWebUI();            // Setup the WebUI, network, etc.
-
+  settings.init(Internal::SettingsFileName);  
+  settings.read();
   Internal::prepIO();               // Prepare any I/O pins used locally
+
+  // Only start the GUI if we have a display attached and are *not* in power saver mode
+  if (settings.hasGUI) GUI::init(true);
+
+  Internal::ensureWebThingSettings();         // Override any pertinent settings in WebThing
+  WebThing::notifyConfigChange(Internal::baseConfigChange);
+  WebThing::notifyOnConfigMode(Internal::configModeCallback);
+
+  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::WiFi);
+  Internal::prepWebUI();            // Setup the WebUI, network, etc.
+  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Splash);
 
   bme.setAttributes(                // Set up sensor attributes and initialize
     settings.tempCorrection,
@@ -126,6 +140,7 @@ void setup() {
   JAWSBlynk::init();                // Setup the Blynk Client
 
   processReadings();                // Get our first set of readings!
+  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Time);
 
   WebThing::postSetup();            // Finalize setup of the WebThing - Must be last
 }
@@ -135,6 +150,7 @@ void loop() {
 
   WebThing::loop();
   JAWSBlynk::run();
+  if (settings.hasGUI) GUI::loop();
 
   uint32_t curMillis = millis();
   if (curMillis - lastSampleTime > (WebThing::settings.processingInterval * 60 * 1000L)) {

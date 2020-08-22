@@ -18,7 +18,7 @@
 #include "JAWSSettings.h"
 //--------------- End:    Includes ---------------------------------------------
 
-const uint32_t  JAWSSettings::CurrentVersion = 0x0002;
+const uint32_t  JAWSSettings::CurrentVersion = 0x0003;
 
 JAWSSettings::JAWSSettings() {
   version = JAWSSettings::CurrentVersion;
@@ -28,6 +28,7 @@ JAWSSettings::JAWSSettings() {
 void JAWSSettings::fromJSON(JsonDocument &doc) {
   description = doc["description"].as<String>();
   useMetric = doc["useMetric"];
+  hasGUI = doc["hasGUI"];
   blynkAPIKey = doc["blynkAPIKey"].as<String>();
   tempCorrection = doc["tempCorrection"];
   humiCorrection = doc["humiCorrection"];
@@ -38,6 +39,7 @@ void JAWSSettings::fromJSON(JsonDocument &doc) {
 void JAWSSettings::toJSON(JsonDocument &doc) {
   doc["description"] = description;
   doc["useMetric"] = useMetric;
+  doc["hasGUI"] = hasGUI;
   doc["blynkAPIKey"] = blynkAPIKey;
   doc["tempCorrection"] = tempCorrection;
   doc["humiCorrection"] = humiCorrection;
@@ -47,6 +49,7 @@ void JAWSSettings::logSettings() {
   Log.verbose("JAWS Settings");
   Log.verbose("  description = %s", description.c_str());
   Log.verbose("  useMetric = %T", useMetric);
+  Log.verbose("  hasGUI = %T", hasGUI);
   Log.verbose("  blynkAPIKey = %s", blynkAPIKey.c_str());
   Log.verbose("  tempCorrection = %F", tempCorrection);
   Log.verbose("  humiCorrection = %F", humiCorrection);

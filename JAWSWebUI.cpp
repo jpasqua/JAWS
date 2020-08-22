@@ -64,7 +64,11 @@ namespace JAWSWebUI {
         if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::bme.heatIndex), 1) + JAWS::tempUnits());
         if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::bme.dewPointTemp), 1) + JAWS::tempUnits());
         if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::bme.dewPointSpread), 1) + JAWS::tempUnits());
-        if (key == "VLTG") return (String(WebThing::measureVoltage(), 2) + "V");
+        if (key == "VLTG") {
+          float voltage = WebThing::measureVoltage();
+          if (voltage == -1) return "N/A";
+          return (String(voltage, 2) + "V");
+        }
         if (key == "TMST") return String(JAWS::bmeTimestamp());
         return "";
       };
@@ -86,6 +90,7 @@ namespace JAWSWebUI {
       auto mapper =[](String &key) -> String {
         if (key == "DESC") return WebThing::encodeAttr(JAWS::settings.description);
         if (key == "USE_METRIC")  return checkedOrNot[JAWS::settings.useMetric];
+        if (key == "HAS_GUI")  return checkedOrNot[JAWS::settings.hasGUI];
         if (key == "BLYNK_KEY")  return JAWS::settings.blynkAPIKey;
         if (key == "TEMP_CORRECT") return String(JAWS::settings.tempCorrection);
         if (key == "HUMI_CORRECT") return String(JAWS::settings.humiCorrection);
@@ -129,6 +134,7 @@ namespace JAWSWebUI {
 
       JAWS::settings.description = WebUI::arg("description");
       JAWS::settings.useMetric = WebUI::hasArg("useMetric");
+      JAWS::settings.hasGUI = WebUI::hasArg("hasGUI");
       JAWS::settings.blynkAPIKey = WebUI::arg("blynkAPIKey");
       JAWS::settings.tempCorrection = WebUI::arg("tempCorrection").toFloat();
       JAWS::settings.humiCorrection = WebUI::arg("humiCorrection").toFloat();
