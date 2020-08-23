@@ -13,9 +13,15 @@ void BMESensor::setAttributes(float tempCorrection, float humiCorrection, int el
 
 void BMESensor::begin(int addr) {
   bool status;
-  status = bme.begin(addr);  
+
+  mock = false;
+  status = bme.begin(addr);
   if (status == 0) {
     Log.error("Could not find a valid BME280 sensor, check wiring!");
+    mock = true;
+    measuredTemp = 20;
+    measuredHumi = 30;
+    measuredBaro = 1013;
     return;
   }
 
@@ -29,25 +35,29 @@ void BMESensor::begin(int addr) {
 
 }
 
-void BMESensor::takeReadings() {    
-  // Measure: absolute Pressure, Temperature, Humidity, voltage
-  // Calculate: Relative Pressure, Dewpoint, Dewpoint Spread, Heat Index
-  bme.takeForcedMeasurement();
+void BMESensor::takeReadings() {
+  if (mock) {
+    measuredTemp += ((float)random(-5, 6))/10.0;
+  } else {
+    // Measure: absolute Pressure, Temperature, Humidity, voltage
+    // Calculate: Relative Pressure, Dewpoint, Dewpoint Spread, Heat Index
+    bme.takeForcedMeasurement();
 
-  // Get temperature
-  measuredTemp = bme.readTemperature();
-  measuredTemp += tempCorrection;
-  Log.verbose("Temp: %F°C", measuredTemp);
+    // Get temperature
+    measuredTemp = bme.readTemperature();
+    measuredTemp += tempCorrection;
+    Log.verbose("Temp: %F°C", measuredTemp);
 
-  // Get humidity
-  measuredHumi = bme.readHumidity();
-  measuredHumi += humiCorrection;
-  if (measuredHumi > 100) measuredHumi = 100;    // the humiCorrection might lead in a value higher than 100%
-  Log.verbose("Humidity: %F%%", measuredHumi);
+    // Get humidity
+    measuredHumi = bme.readHumidity();
+    measuredHumi += humiCorrection;
+    if (measuredHumi > 100) measuredHumi = 100;    // the humiCorrection might lead in a value higher than 100%
+    Log.verbose("Humidity: %F%%", measuredHumi);
 
-  // Get pressure
-  measuredBaro = bme.readPressure() / 100.0F;
-  Log.verbose("Pressure: %F hPa", measuredBaro);
+    // Get pressure
+    measuredBaro = bme.readPressure() / 100.0F;
+    Log.verbose("Pressure: %F hPa", measuredBaro);    
+  }
 
   // Calculate and print relative pressure
   float SLpressure_hPa = (((measuredBaro * 100.0)/pow((1-((float)(elevation))/44330), 5.255))/100.0);

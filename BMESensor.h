@@ -30,6 +30,7 @@ private:
   int   elevation;        // Units: meters
   float tempCorrection;   // Units: °C
   float humiCorrection;   // Units: %
+  bool  mock;
 };
 
 #endif  // BMESensor_h
