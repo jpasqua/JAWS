@@ -17,15 +17,16 @@ public:
 
     oled->clear();
     oled->setTextAlignment(TEXT_ALIGN_CENTER);
-    oled->setFont(ArialMT_Plain_10);
-    oled->drawString(GUI::XCenter, 0, "Connect to WiFi");
     oled->setFont(ArialMT_Plain_16);
-    oled->drawString(GUI::XCenter, 23, JAWS::SSID);
+    oled->drawString(64, 0, "Connect to WIFi:");
+    oled->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+    oled->setFont(ArialMT_Plain_24);
+    // TEXT_ALIGN_CENTER_BOTH centers on the overall font height. For this, I want to
+    // center on the baseline, hence I use 36 as the center instead of 32 (=64/2+4)
+    oled->drawString(64, 36, JAWS::SSID);
+    oled->setTextAlignment(TEXT_ALIGN_CENTER);
     oled->setFont(ArialMT_Plain_10);
-    oled->setTextAlignment(TEXT_ALIGN_LEFT);
-    oled->drawString(GUI::XCenter, 42, "Follow on-screen");
-    oled->setTextAlignment(TEXT_ALIGN_RIGHT);
-    oled->drawString(GUI::XCenter, 42, "Instructions");
+    oled->drawString(64, 52, "then choose your network");
     oled->display();
 
     timeOfLastDisplay = millis();
