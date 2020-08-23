@@ -69,6 +69,7 @@ namespace JAWS {
     void configModeCallback(String &ssid, String &ip) {
       (void)ip; // We don't use this parameter - avoid a warning
       SSID = ssid;
+      if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Config);
     }
   } // ----- END: JAWS::Internal namespace
 
