@@ -15,6 +15,7 @@ namespace JAWS {
   extern BMESensor bme;
   extern JAWSSettings settings;
   extern String SSID;
+  extern const String Version;
 
   void    processReadings();
   float   outputTemp(float temp);

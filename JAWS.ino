@@ -37,8 +37,7 @@ namespace JAWS {
 
   JAWSSettings settings;
   String SSID = "";
-
-  static const String Version = "0.3.0";
+  const String Version = "0.3.0";
 
   namespace Internal {
     static const String   SettingsFileName = "/settings.json";
