@@ -21,7 +21,7 @@ namespace GUI {
   static const uint16_t XCenter = Width/2;
   static const uint16_t YCenter = Height/2;
 
-  typedef enum {WiFi, Config, Splash, Time, Temp, Humi, Baro, All, Graph, Off, N_Screens, NoScreen} ScreenName;
+  typedef enum {WiFi, Config, Splash, Time, Temp, Humi, Baro, All, Graph, Info, Off, N_Screens, NoScreen} ScreenName;
 
   void showScreen(ScreenName which);
   void init(bool flipDisplay = false);

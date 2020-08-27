@@ -16,6 +16,7 @@
 #include "BitmapScreen.h"
 #include "ConfigScreen.h"
 #include "GraphScreen.h"
+#include "InfoScreen.h"
 #include "OffScreen.h"
 #include "ReadingScreen.h"
 #include "TimeScreen.h"
@@ -104,6 +105,7 @@ namespace GUI {
     screens[ScreenName::Baro] = new BaroScreen();
     screens[ScreenName::All] = new AllReadingsScreen();
     screens[ScreenName::Graph] = new GraphScreen();
+    screens[ScreenName::Info] = new InfoScreen();
     screens[ScreenName::Off] = new OffScreen();
 
     switches.initialise(ioUsingArduino(), true);
