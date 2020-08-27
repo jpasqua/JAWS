@@ -65,4 +65,18 @@
   // const int BUTTON_PIN = D3;      // Button to accept input
 #endif
 
+
+/*------------------------------------------------------------------------------
+ *
+ * Sensor Configuration
+ *
+ *----------------------------------------------------------------------------*/
+
+// There may be a separate DS18B20 attached to provide more accurate and stable
+// temperature readings. If so, provide the pin to which it is attached. If not,
+// set the pin to -1.
+// const int DS18B20_PIN = -1;         // -1 to indicate no DS18B20 (which is typical)
+const int DS18B20_PIN = D3;         // -1 to indicate no DS18B20 (which is typical)
+
+
 #endif  // HWConfig_h
