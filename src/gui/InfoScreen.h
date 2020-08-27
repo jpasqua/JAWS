@@ -21,16 +21,16 @@ public:
     oled->setTextAlignment(TEXT_ALIGN_CENTER);
     snprintf(
         GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "JAWS v%s", JAWS::Version.c_str());
-    oled->drawString(GUI::XCenter, 0, GUIPackage::fmtBuf);
+    oled->drawString(GUI::XCenter, 5, GUIPackage::fmtBuf);
 
     oled->setFont(ArialMT_Plain_10);
     snprintf(
         GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%s", WebThing::settings.hostname.c_str());
-    oled->drawString(GUI::XCenter, 24, GUIPackage::fmtBuf);
+    oled->drawString(GUI::XCenter, 29, GUIPackage::fmtBuf);
 
     snprintf(
         GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%s", WiFi.localIP().toString().c_str());
-    oled->drawString(GUI::XCenter, 37, GUIPackage::fmtBuf);
+    oled->drawString(GUI::XCenter, 42, GUIPackage::fmtBuf);
 
     // snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Something else: %s", someString);
     // oled->drawString(0, 50, GUIPackage::fmtBuf);

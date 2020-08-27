@@ -21,6 +21,7 @@
 //                                  Local Includes
 #include "JAWS.h"
 #include "JAWSWebUI.h"
+#include "src/gui/GUI.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
@@ -57,13 +58,13 @@ namespace JAWSWebUI {
         if (key == "GMAPS_KEY") return WebThing::settings.googleMapsKey;
         if (key == "LAT")  return WebThing::settings.latAsString();
         if (key == "LNG")  return WebThing::settings.lngAsString();
-        if (key == "TEMP") return (String(JAWS::outputTemp(JAWS::bme.measuredTemp), 1) + JAWS::tempUnits());
-        if (key == "HUMI") return (String(JAWS::bme.measuredHumi, 1) + "%");
-        if (key == "BARO") return (String(JAWS::outputBaro(JAWS::bme.measuredBaro), 1) + JAWS::baroUnits());
-        if (key == "RELP") return (String(JAWS::outputBaro(JAWS::bme.relPressure), 1) + JAWS::baroUnits());
-        if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::bme.heatIndex), 1) + JAWS::tempUnits());
-        if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::bme.dewPointTemp), 1) + JAWS::tempUnits());
-        if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::bme.dewPointSpread), 1) + JAWS::tempUnits());
+        if (key == "TEMP") return (String(JAWS::outputTemp(JAWS::readings.temp), 1) + JAWS::tempUnits());
+        if (key == "HUMI") return (String(JAWS::readings.humidity, 1) + "%");
+        if (key == "BARO") return (String(JAWS::outputBaro(JAWS::readings.pressure), 1) + JAWS::baroUnits());
+        if (key == "RELP") return (String(JAWS::outputBaro(JAWS::readings.relPressure), 1) + JAWS::baroUnits());
+        if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::readings.heatIndex), 1) + JAWS::tempUnits());
+        if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::readings.dewPointTemp), 1) + JAWS::tempUnits());
+        if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::readings.dewPointSpread), 1) + JAWS::tempUnits());
         if (key == "VLTG") {
           float voltage = WebThing::measureVoltage();
           if (voltage == -1) return "N/A";
@@ -159,27 +160,37 @@ namespace JAWSWebUI {
 
       String json = "{";
       json += "\"temperature\": ";
-      json += JAWS::bme.measuredTemp;
+      json += JAWS::readings.temp;
       json += ", ";
       json += "\"humidity\": ";
-      json += JAWS::bme.measuredHumi;
+      json += JAWS::readings.humidity;
       json += "}";
       server->sendHeader("Cache-Control", "private, no-store");
       server->send(200, "application/json", json);
     }
   }   // ----- END: JAWSWebUI::Endpoints
 
+  namespace Dev {
+    void yieldScreenShot() {
+      Log.trace(F("Web Request: /dev/screenShot"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
+    }
+  }   // ----- END: JAWSWebUI::Dev
 
   void init() {
     WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
     WebUI::addMenuItems(Internal::Actions);
 
-    WebUI::registerHandler("/", Pages::displayHomePage);
-    WebUI::registerHandler("/displayJAWSConfig", Pages::displayJAWSConfig);
+    WebUI::registerHandler("/",                   Pages::displayHomePage);
+    WebUI::registerHandler("/displayJAWSConfig",  Pages::displayJAWSConfig);
 
-    WebUI::registerHandler("/updateJAWSConfig", Endpoints::updateJAWSConfig);
-    WebUI::registerHandler("/takeReadings", Endpoints::updateReadings);
-    WebUI::registerHandler("/weather", Endpoints::weather);
+    WebUI::registerHandler("/updateJAWSConfig",   Endpoints::updateJAWSConfig);
+    WebUI::registerHandler("/takeReadings",       Endpoints::updateReadings);
+    WebUI::registerHandler("/weather",            Endpoints::weather);
+
+    WebUI::registerHandler("/dev/screenShot",     Dev::yieldScreenShot);
 
     templateHandler = WebUI::getTemplateHandler();
   }

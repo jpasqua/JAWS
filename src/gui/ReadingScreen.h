@@ -28,7 +28,7 @@ public:
     oled->drawString(GUI::XCenter, 20, GUIPackage::fmtBuf);
     uint16_t w = oled->getStringWidth(GUIPackage::fmtBuf);
     oled->setFont(ArialMT_Plain_16);
-    oled->drawString(GUI::XCenter+w/2+4, 40, units);
+    oled->drawString(GUI::XCenter+w/2+6, 40, units);
     oled->display();
 
     timeOfLastDisplay = millis();
@@ -42,14 +42,14 @@ public:
 class HumidityScreen : public ReadingScreen {
 public:
   void display(bool activating = false) { 
-    ReadingScreen::display(activating, "Humidity", "%.0f", JAWS::bme.measuredHumi, "%");
+    ReadingScreen::display(activating, "Humidity", "%.0f", JAWS::readings.humidity, "%");
   }
 };
 
 class TempScreen : public ReadingScreen {
 public:
   void display(bool activating = false) {
-    ReadingScreen::display(activating, "Temperature", "%.0f", JAWS::outputTemp(JAWS::bme.measuredTemp), JAWS::tempUnits().c_str());
+    ReadingScreen::display(activating, "Temperature", "%.0f", JAWS::outputTemp(JAWS::readings.temp), JAWS::tempUnits().c_str());
   }
 };
 
@@ -57,6 +57,6 @@ class BaroScreen : public ReadingScreen {
 public:
   void display(bool activating = false) {
     snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Barometer (%s)", JAWS::baroUnits().c_str());
-    ReadingScreen::display(activating, GUIPackage::fmtBuf, "%.1f", JAWS::outputBaro(JAWS::bme.measuredBaro), "");
+    ReadingScreen::display(activating, GUIPackage::fmtBuf, "%.1f", JAWS::outputBaro(JAWS::readings.pressure), "");
   }
 };

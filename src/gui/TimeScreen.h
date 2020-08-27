@@ -38,8 +38,8 @@ public:
     oled->setTextAlignment(TEXT_ALIGN_CENTER);
     snprintf(
         GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%.0f%s   %.0f%%",
-        JAWS::outputTemp(JAWS::bme.measuredTemp), JAWS::tempUnits().c_str(),
-        JAWS::bme.measuredHumi);
+        JAWS::outputTemp(JAWS::readings.temp), JAWS::tempUnits().c_str(),
+        JAWS::readings.humidity);
     oled->drawString(GUI::XCenter, 44, GUIPackage::fmtBuf);
 
     oled->display();

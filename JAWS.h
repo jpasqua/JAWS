@@ -6,16 +6,17 @@
 //                                  Third Party Libraries
 #include <WebThing.h>
 //                                  Local Includes
-#include "BMESensor.h"
 #include "JAWSSettings.h"
+#include "src/clients/Readings.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
 namespace JAWS {
-  extern BMESensor bme;
   extern JAWSSettings settings;
-  extern String SSID;
+  extern Readings readings;
+
   extern const String Version;
+  extern String SSID;
 
   void    processReadings();
   float   outputTemp(float temp);

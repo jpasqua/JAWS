@@ -19,13 +19,13 @@ public:
     oled->setFont(ArialMT_Plain_16);
     oled->setTextAlignment(TEXT_ALIGN_LEFT);
     snprintf(
-        GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Temp: %.0f%s",
-        JAWS::outputTemp(JAWS::bme.measuredTemp), JAWS::tempUnits().c_str());
+        GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Temp: %.1f%s",
+        JAWS::outputTemp(JAWS::readings.temp), JAWS::tempUnits().c_str());
     oled->drawString(0, 5, GUIPackage::fmtBuf);
-    snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Humi: %.0f%%", JAWS::bme.measuredHumi);
+    snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Humi: %.0f%%", JAWS::readings.humidity);
     oled->drawString(0, 24, GUIPackage::fmtBuf);
     snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Baro: %.1f%s",
-        JAWS::outputBaro(JAWS::bme.measuredBaro), JAWS::baroUnits().c_str());
+        JAWS::outputBaro(JAWS::readings.pressure), JAWS::baroUnits().c_str());
     oled->drawString(0, 43, GUIPackage::fmtBuf);
     oled->display();
 

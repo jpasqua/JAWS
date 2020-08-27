@@ -47,11 +47,16 @@ public:
     oled->setFont(ArialMT_Plain_10);
     oled->setTextAlignment(TEXT_ALIGN_LEFT);
     oled->drawString(0, MaxYForGraph + 5, GUIPackage::fmtBuf);
+
+    snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%0.1f", JAWS::outputTemp(JAWS::readings.temp));
+    oled->setTextAlignment(TEXT_ALIGN_CENTER);
+    oled->drawString(GUI::XCenter, MaxYForGraph + 5, GUIPackage::fmtBuf);
+
     snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Hi: %0.1f", graphMax);
     oled->setTextAlignment(TEXT_ALIGN_RIGHT);
     oled->drawString(GUI::Width, MaxYForGraph + 5, GUIPackage::fmtBuf);
+    
     oled->display();
-
     lastSampleHead = GUIPackage::sampleHead;
   }
 

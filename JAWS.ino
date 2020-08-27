@@ -23,6 +23,8 @@
 #include "JawsWebUI.h"
 #include "JAWSBlynk.h"
 #include "src/gui/GUI.h"
+#include "src/clients/BMESensor.h"
+#include "src/clients/DS18B20.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
@@ -33,7 +35,8 @@ namespace JAWS {
    *
    *----------------------------------------------------------------------------*/
   BMESensor bme;
-  time_t timeOfBMEReading = 0;
+  DS18B20*  tempSensor;
+  Readings  readings;
 
   JAWSSettings settings;
   String SSID = "";
@@ -55,6 +58,18 @@ namespace JAWS {
 
     void prepIO() {
       Wire.begin(SDA_PIN, SCL_PIN);
+    }
+
+    void prepSensors() {
+      bme.setAttributes(                // Set up sensor attributes and initialize
+        settings.tempCorrection,
+        settings.humiCorrection,
+        WebThing::settings.elevation);
+      bme.begin();  
+      if (DS18B20_PIN != -1) {
+        tempSensor = new DS18B20();
+        tempSensor->begin(DS18B20_PIN, settings.tempCorrection);
+      } else tempSensor = NULL;
     }
 
     void prepWebUI() {
@@ -88,13 +103,22 @@ namespace JAWS {
       year(theTime), month(theTime), day(theTime), hour(theTime), minute(theTime), second(theTime));
     return dateTime;
   }
-  char *bmeTimestamp() { return formattedTime(timeOfBMEReading); }
+  char *bmeTimestamp() { return formattedTime(readings.timestamp); }
 
   void processReadings() {
-    bme.takeReadings();
-    timeOfBMEReading = now();
+    bme.takeReadings(readings);
+    if (tempSensor != NULL) {
+      float temp = tempSensor->getTempC();
+      if (temp == DS18B20::ReadingError) {
+        Log.warning("Error reading from DS18B20");
+      } else {
+        Log.trace("Overriding reading from BME (%F) with DS (%F)", readings.temp, temp);
+        readings.temp = temp;
+      }
+    }
+    readings.timestamp = now();
     JAWSBlynk::update();
-    if (settings.hasGUI) GUI::noteNewSample(outputTemp(bme.measuredTemp));
+    if (settings.hasGUI) GUI::noteNewSample(outputTemp(readings.temp));
   }
 
 } // ----- END: JAWS namespace
@@ -131,11 +155,7 @@ void setup() {
   Internal::prepWebUI();            // Setup the WebUI, network, etc.
   if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Splash);
 
-  bme.setAttributes(                // Set up sensor attributes and initialize
-    settings.tempCorrection,
-    settings.humiCorrection,
-    WebThing::settings.elevation);
-  bme.begin();
+  Internal::prepSensors();
 
   JAWSBlynk::init();                // Setup the Blynk Client
 

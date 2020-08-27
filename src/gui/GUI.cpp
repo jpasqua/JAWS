@@ -118,4 +118,62 @@ namespace GUI {
     GUIPackage::nSamples = std::min(GUIPackage::nSamples+1, GUIPackage::MaxSamples);
     GUIPackage::timeOfLastReading = millis();
   }
+
+  uint32_t getSizeOfScreenShotAsBMP() {
+    return (2ul * oled->getWidth() * oled->getHeight() + 54); // pix data + 54 byte hdr
+  }
+
+  void streamScreenShotAsBMP(Stream &s) {
+    // Adapted from https://forum.arduino.cc/index.php?topic=406416.0
+    byte hiByte, loByte;
+
+    uint8_t bmFlHdr[14] = {
+      'B', 'M', 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0
+    };
+    // 54 = std total "old" Windows BMP file header size = 14 + 40
+    
+    uint8_t bmInHdr[40] = {
+      40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 16, 0
+    };   
+    // 40 = info header size
+    //  1 = num of color planes
+    // 16 = bits per pixel
+    // all other header info = 0, including RI_RGB (no compr), DPI resolution
+
+    uint32_t w = oled->getWidth();
+    uint32_t h = oled->getHeight();
+    unsigned long bmpSize = 2ul * h * w + 54; // pix data + 54 byte hdr
+    
+    bmFlHdr[ 2] = (uint8_t)(bmpSize      ); // all ints stored little-endian
+    bmFlHdr[ 3] = (uint8_t)(bmpSize >>  8); // i.e., LSB first
+    bmFlHdr[ 4] = (uint8_t)(bmpSize >> 16);
+    bmFlHdr[ 5] = (uint8_t)(bmpSize >> 24);
+
+    bmInHdr[ 4] = (uint8_t)(w      );
+    bmInHdr[ 5] = (uint8_t)(w >>  8);
+    bmInHdr[ 6] = (uint8_t)(w >> 16);
+    bmInHdr[ 7] = (uint8_t)(w >> 24);
+    bmInHdr[ 8] = (uint8_t)(h      );
+    bmInHdr[ 9] = (uint8_t)(h >>  8);
+    bmInHdr[10] = (uint8_t)(h >> 16);
+    bmInHdr[11] = (uint8_t)(h >> 24);
+
+    s.write(bmFlHdr, sizeof(bmFlHdr));
+    s.write(bmInHdr, sizeof(bmInHdr));
+
+    for (uint16_t y = h; y > 0; y--) {
+      byte buf[w*2];
+      byte *ptr = &buf[0];
+      for (uint16_t x = 0; x < w; x++) {
+        uint8_t theByte = oled->buffer[x + (y / 8) * w];
+        uint8_t thePixel = theByte & (1 << (y & 7));
+        if (thePixel) { loByte = hiByte = 0xff; }
+        else {loByte = hiByte = 0x00; }
+        
+        *ptr++ = loByte;
+        *ptr++ = hiByte;
+      }
+      s.write(buf, w*2);
+    }
+  }
 } // ----- END: GUI namespace
