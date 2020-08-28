@@ -50,7 +50,7 @@ public:
 
   virtual void processPeriodicActivity() {
     if (compositeTime != hour()*100+minute() ||
-        GUIPackage::timeOfLastReading > timeOfLastDisplay) display();
+        JAWS::readings.timestamp > timeOfLastDisplay) display();
   }
 
 private:

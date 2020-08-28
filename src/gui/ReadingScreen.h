@@ -35,7 +35,7 @@ public:
   }
 
   virtual void processPeriodicActivity() {
-    if (GUIPackage::timeOfLastReading > timeOfLastDisplay) display();
+    if (JAWS::readings.timestamp > timeOfLastDisplay) display();
   }
 };
 
