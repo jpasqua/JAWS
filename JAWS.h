@@ -14,6 +14,7 @@
 namespace JAWS {
   extern JAWSSettings settings;
   extern Readings readings;
+  
 
   extern const String Version;
   extern String SSID;
@@ -26,6 +27,13 @@ namespace JAWS {
   String  baroUnits();
   char    *formattedTime(time_t theTime);
   char    *bmeTimestamp();
+
+  namespace History {
+    extern const uint8_t MaxSamples;
+    extern uint8_t nSamples;
+    float getSample(uint8_t index);
+    void appendSample(float value);
+  }
 }
 
 #endif  // JAWS_h

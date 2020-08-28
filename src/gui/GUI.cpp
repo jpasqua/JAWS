@@ -112,13 +112,6 @@ namespace GUI {
     switches.addSwitch(BUTTON_PIN, advanceButtonClicked);
   }
 
-  void noteNewSample(float val) {
-    GUIPackage::samples[GUIPackage::sampleHead] = val;
-    GUIPackage::sampleHead = (GUIPackage::sampleHead + 1) % GUIPackage::MaxSamples;
-    GUIPackage::nSamples = std::min(GUIPackage::nSamples+1, GUIPackage::MaxSamples);
-    GUIPackage::timeOfLastReading = millis();
-  }
-
   uint32_t getSizeOfScreenShotAsBMP() {
     return (2ul * oled->getWidth() * oled->getHeight() + 54); // pix data + 54 byte hdr
   }

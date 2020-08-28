@@ -42,6 +42,34 @@ namespace JAWS {
   String SSID = "";
   const String Version = "0.3.0";
 
+  namespace History {
+    const     uint8_t MaxSamples = 128;
+    float     samples[MaxSamples];  // Circular buffer of samples
+    uint32_t  times[MaxSamples];    // Circular buffer of timestamps
+    uint8_t   nSamples = 0;         // Sample Data: Number of samples stored so far
+    int       sampleHead = 0;       // Sample Data: Location to store the next sample
+
+    float getSample(uint8_t index) {
+      if (index >= nSamples) return 0.0f; // Index out of range
+      if (nSamples == MaxSamples) index = (sampleHead + index) % MaxSamples;
+      return samples[index];
+    }
+
+    void getSample(uint8_t index, float& sample, uint32_t& timestamp){
+      if (index >= nSamples) { sample = 0.0; timestamp = 0; return; } // Index out of range
+      if (nSamples == MaxSamples) index = (sampleHead + index) % MaxSamples;
+      sample = samples[index];
+      timestamp = times[index];
+    }
+
+    void appendSample(float value) {
+      samples[sampleHead] = value;
+      times[sampleHead] = now();
+      sampleHead = (sampleHead + 1) % MaxSamples;
+      if (nSamples != MaxSamples) nSamples++;
+    }
+  }
+
   namespace Internal {
     static const String   SettingsFileName = "/settings.json";
 
@@ -116,9 +144,9 @@ namespace JAWS {
         readings.temp = temp;
       }
     }
-    readings.timestamp = now();
+    readings.timestamp = millis();
     JAWSBlynk::update();
-    if (settings.hasGUI) GUI::noteNewSample(outputTemp(readings.temp));
+    History::appendSample(readings.temp);
   }
 
 } // ----- END: JAWS namespace

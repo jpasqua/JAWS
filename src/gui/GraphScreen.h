@@ -18,12 +18,10 @@ public:
     // Determine the range of values in the sample data
     float graphMin =  1000.0;
     float graphMax = -1000.0;
-    int i = (GUIPackage::nSamples < GUIPackage::MaxSamples) ? 0 : GUIPackage::sampleHead;
-    for (int count = 0; count < GUIPackage::nSamples; count++) {
-      float cur = GUIPackage::samples[i];
+    for (int i = 0; i < JAWS::History::nSamples; i++) {
+      float cur = JAWS::outputTemp(JAWS::History::getSample(i));
       if (cur < graphMin) { graphMin = cur; }
       if (cur > graphMax) { graphMax = cur; }
-      i = (i + 1) % GUIPackage::MaxSamples;
     }
 
     float actualRange = graphMax - graphMin;
@@ -32,14 +30,12 @@ public:
     float rangeLo = graphMin - rangePadding;
 
     oled->clear();
-    i = (GUIPackage::nSamples < GUIPackage::MaxSamples) ? 0 : GUIPackage::sampleHead;
-    for (int count = 0; count < GUIPackage::nSamples; count++) {
-      float cur = GUIPackage::samples[i];
+    for (int i = 0; i < JAWS::History::nSamples; i++) {
+      float cur = JAWS::outputTemp(JAWS::History::getSample(i));
       
       float percentIntoRange = (cur - rangeLo)/displayedRange;
       percentIntoRange = 1.0 - percentIntoRange; // Hi values are at the top which are lower pixel values
-      oled->setPixel(count, (int)(MaxYForGraph*percentIntoRange));
-      i = (i + 1) % GUIPackage::MaxSamples;
+      oled->setPixel(i, (int)(MaxYForGraph*percentIntoRange));
     }
 
     // Display the Legend
@@ -57,14 +53,13 @@ public:
     oled->drawString(GUI::Width, MaxYForGraph + 5, GUIPackage::fmtBuf);
     
     oled->display();
-    lastSampleHead = GUIPackage::sampleHead;
+    timeOfLastDisplay = millis();
   }
 
   virtual void processPeriodicActivity() {
-    if (lastSampleHead != GUIPackage::sampleHead) display();
+    if (JAWS::readings.timestamp > timeOfLastDisplay) { display(); }
   }
 
 private:
   static const uint8_t MaxYForGraph = 48;  // Reserve space for the legend
-  int lastSampleHead = -1;
 };

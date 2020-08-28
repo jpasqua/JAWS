@@ -36,14 +36,6 @@ namespace GUIPackage {
   //
   extern const uint8_t DSEG7_Classic_Bold_32[];
 
-  //
-  // State
-  //
-  extern float  samples[MaxSamples];  // Circular buffer
-  extern int    nSamples;             // Number of samples stored so far
-  extern int    sampleHead;           // Location to store the next sample
-  extern uint32_t timeOfLastReading;
-
   extern DISPLAY_OBJ *oled;
   extern char fmtBuf[FmtBufSize];
 
