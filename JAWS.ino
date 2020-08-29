@@ -86,6 +86,7 @@ namespace JAWS {
 
     void prepIO() {
       Wire.begin(SDA_PIN, SCL_PIN);
+      if (BUTTON_LOW_PIN != -1) pinMode(BUTTON_LOW_PIN, LOW);
     }
 
     void prepSensors() {
@@ -131,7 +132,9 @@ namespace JAWS {
       year(theTime), month(theTime), day(theTime), hour(theTime), minute(theTime), second(theTime));
     return dateTime;
   }
-  char *bmeTimestamp() { return formattedTime(readings.timestamp); }
+  char *timeOfLastReading() {
+    return formattedTime(now() - (millis() - readings.timestamp)/1000L);
+  }
 
   void processReadings() {
     bme.takeReadings(readings);

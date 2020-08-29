@@ -51,7 +51,7 @@ namespace JAWSBlynk {
     Blynk.virtualWrite(BlynkHeatIndexPin,   JAWS::outputTemp(JAWS::readings.heatIndex));
     Blynk.virtualWrite(BlynkVoltagePin,     voltage);
     if (timeStatus() == timeSet) {
-      char *dateTime = JAWS::bmeTimestamp();
+      char *dateTime = JAWS::timeOfLastReading();
       Log.verbose("Timestamp sent to Blynk: %s", dateTime);
       Blynk.virtualWrite(BlynkTimestampPin, dateTime);
     }

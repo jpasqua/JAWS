@@ -26,7 +26,7 @@ namespace JAWS {
   String  tempUnits();
   String  baroUnits();
   char    *formattedTime(time_t theTime);
-  char    *bmeTimestamp();
+  char    *timeOfLastReading();
 
   namespace History {
     extern const uint8_t MaxSamples;
