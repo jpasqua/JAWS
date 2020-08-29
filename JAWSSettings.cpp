@@ -29,6 +29,7 @@ void JAWSSettings::fromJSON(JsonDocument &doc) {
   description = doc["description"].as<String>();
   useMetric = doc["useMetric"];
   hasGUI = doc["hasGUI"];
+  showDevMenu = doc["showDevMenu"];
   blynkAPIKey = doc["blynkAPIKey"].as<String>();
   tempCorrection = doc["tempCorrection"];
   humiCorrection = doc["humiCorrection"];
@@ -40,6 +41,7 @@ void JAWSSettings::toJSON(JsonDocument &doc) {
   doc["description"] = description;
   doc["useMetric"] = useMetric;
   doc["hasGUI"] = hasGUI;
+  doc["showDevMenu"] = showDevMenu;
   doc["blynkAPIKey"] = blynkAPIKey;
   doc["tempCorrection"] = tempCorrection;
   doc["humiCorrection"] = humiCorrection;
@@ -50,6 +52,7 @@ void JAWSSettings::logSettings() {
   Log.verbose("  description = %s", description.c_str());
   Log.verbose("  useMetric = %T", useMetric);
   Log.verbose("  hasGUI = %T", hasGUI);
+  Log.verbose("  showDevMenu = %T", showDevMenu);
   Log.verbose("  blynkAPIKey = %s", blynkAPIKey.c_str());
   Log.verbose("  tempCorrection = %F", tempCorrection);
   Log.verbose("  humiCorrection = %F", humiCorrection);
