@@ -38,7 +38,9 @@ namespace JAWSWebUI {
       "<i class='fa fa-cog'></i> Configure JAWS</a>"
       "<a class='w3-bar-item w3-button' href='/takeReadings'>"
       "<i class='fa fa-thermometer-three-quarters'></i> Take readings</a>";
-  }
+    String DEV_ACTION =
+      "<a class='w3-bar-item w3-button' href='/dev'>"
+      "<i class='fa fa-gears'></i> Dev Settings</a>";  }
   // ----- END: JAWSWebUI::Internal
 
 
@@ -70,7 +72,7 @@ namespace JAWSWebUI {
           if (voltage == -1) return "N/A";
           return (String(voltage, 2) + "V");
         }
-        if (key == "TMST") return String(JAWS::bmeTimestamp());
+        if (key == "TMST") return String(JAWS::timeOfLastReading());
         return "";
       };
 
@@ -170,18 +172,91 @@ namespace JAWSWebUI {
     }
   }   // ----- END: JAWSWebUI::Endpoints
 
+
   namespace Dev {
+    void dumpArgs() {
+      ESP8266WebServer* server = WebUI::getUnderlyingServer();
+      int nArgs = server->args();
+      Log.verbose("“Number of args received: %d", nArgs);
+      for (int i = 0; i < nArgs; i++) {
+        Log.verbose("arg(%d): %s = %s", i, server->argName(i).c_str(), server->arg(i).c_str());
+      } 
+    }
+
+    void updateSettings() {
+dumpArgs();
+      if (!WebUI::authenticationOK()) { return; }
+      Log.trace("Web Request: /dev/updateSettings");
+
+      JAWS::settings.showDevMenu = WebUI::hasArg("showDevMenu");
+      JAWS::settings.write();
+
+      WebUI::redirectHome();
+    }
+
     void yieldScreenShot() {
       Log.trace(F("Web Request: /dev/screenShot"));
       if (!WebUI::authenticationOK()) { return; }
 
       WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
     }
+
+    void displayDevPage() {
+      Log.trace(F("Web Request: /dev/displayDevPage"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      auto mapper =[](String &key) -> String {
+        if (key == "SHOW_DEV_MENU") return checkedOrNot[JAWS::settings.showDevMenu];
+        return "";
+      };
+
+      WebUI::startPage();
+      templateHandler->send("/DevPage.html", mapper);
+      WebUI::finishPage();
+    }
+
+    void reboot() {
+      if (!WebUI::authenticationOK()) { return; }
+      ESP.restart();
+    }
+
+    void yieldSettings() {
+      Log.trace(F("Web Request: /dev/settings"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      DynamicJsonDocument *doc = (WebUI::hasArg("wt")) ? WebThing::settings.asJSON() :
+                                                         JAWS::settings.asJSON();
+      WebUI::sendJSONContent(doc);
+      doc->clear();
+      delete doc;
+    }
+
+    void forceScreen() {
+      Log.trace(F("Web Request: /dev/forceScreen"));
+      if (!WebUI::authenticationOK()) { return; }
+      String screen = WebUI::arg(F("screen"));
+      if (screen.isEmpty()) return;
+
+      if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
+      else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
+      else if (screen == F("config")) {
+        JAWS::SSID = "jaws-nnnnnn";
+        GUI::showScreen(GUI::ScreenName::Config);
+      }
+
+      WebUI::redirectHome();
+    }
   }   // ----- END: JAWSWebUI::Dev
+
 
   void init() {
     WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
-    WebUI::addMenuItems(Internal::Actions);
+
+    String actions = Internal::Actions;
+    if (JAWS::settings.showDevMenu) {
+      actions += Internal::DEV_ACTION;
+    }
+    WebUI::addMenuItems(actions);
 
     WebUI::registerHandler("/",                   Pages::displayHomePage);
     WebUI::registerHandler("/displayJAWSConfig",  Pages::displayJAWSConfig);
@@ -190,7 +265,12 @@ namespace JAWSWebUI {
     WebUI::registerHandler("/takeReadings",       Endpoints::updateReadings);
     WebUI::registerHandler("/weather",            Endpoints::weather);
 
+    WebUI::registerHandler("/dev",                Dev::displayDevPage);
+    WebUI::registerHandler("/dev/reboot",         Dev::reboot);
+    WebUI::registerHandler("/dev/settings",       Dev::yieldSettings);
     WebUI::registerHandler("/dev/screenShot",     Dev::yieldScreenShot);
+    WebUI::registerHandler("/dev/forceScreen",    Dev::forceScreen);
+    WebUI::registerHandler("/dev/updateSettings", Dev::updateSettings);
 
     templateHandler = WebUI::getTemplateHandler();
   }
