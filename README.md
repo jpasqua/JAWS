@@ -152,14 +152,14 @@ Before you get started, you will need API keys for the services mentioned above 
 
 <a name="connecting-to-your-network"></a>
 ### Connecting to your network
-Once you have assembled your hardware and loaded the firmware, the weather station will boot and create its own WiFi access point. Connect to the new access point you will see on your phone or computer's wifi connection list. It will have an SSID of the form `jaws-nnnnnn`. Once you do, you will enter a "captive portal" where you can configure the weather station for your actual WiFi base station. When you've done that, you can reset the weather station and it will connect to your wifi network.
+Once you have assembled your hardware and loaded the firmware, the weather station will boot and create its own WiFi access point. Connect to the new access point you will see on your phone or computer's wifi connection list. It will have an SSID of the form `jawsNNNNNN`. Once you do, you will enter a "captive portal" where you can configure the weather station for your actual WiFi base station. When you've done that, you can reset the weather station and it will connect to your wifi network.
 
 At this point it will make a web interface available. You can connect using either an IP address or a hostname:
 
 - **IP Access**: You need to determine the IP Address used by the weather station. You have a couple of choices here:
     - If you are still connected via USB, you will see the IP address in the Arduino Serial Monitor
     - You can use a scanning tool or your router to look for the device on your network
-- **Hostname**: If your system supports mDNS (e.g. a Mac or a Raspberry Pi running avahi) you can connect to hostname.local in your browser. Hostname will either by a name that you set in Settings.h or a name of the form `jaws-nnnnnn`.
+- **Hostname**: If your system supports mDNS (e.g. a Mac or a Raspberry Pi running avahi) you can connect to hostname.local in your browser. Hostname will either by a name that you set in Settings.h or a name of the form `jawsNNNNNN`.
 
 
 ### Configuring JAWS
@@ -246,21 +246,66 @@ Interacting with the device requires a single momentary push button. You must te
 
 ### Using the GUI
 
-***To be written***
+The GUI is organized into a simple set of screens. You navigate through the screens by pressing the attached button. A press moves from the current screen to the next. The sequence is as follows:
+
+When *JAWS* boots up you will see a WiFi screen while it is connecting to your network.
+
+![](doc/images/ss/WiFiScreen.png)  
+
+If it hasn't been configured yet or you move it to a different location with different WiFi base station, *JAWS* will display a Configuration screen telling you to connect to a specified hotspot in order to [configure network access](#connecting-to-your-network).
+
+![](doc/images/ss/ConfigScreen.png)  
+
+Once *JAWS* has connected to your network it will display a Splash screen while it finishes initializing.
+
+![](doc/images/ss/SplashScreen.png)  
+
+After initialization is complete, you will see the Time screen which displays the time in a large font, and the temperature and humidity below that.
+
+![](doc/images/ss/TimeScreen.png)  
+
+If you press the button you'll move to the Temperature screen, then the Humidity Screen, the Barometric Pressure screen, and the "All Readings" screen
+
+![](doc/images/ss/TempScreen.png)  ![](doc/images/ss/HumidityScreen.png)  ![](doc/images/ss/BaroScreen.png)  ![](doc/images/ss/AllScreen.png)  
+
+The next button press takes you to the Graph screen. It shows a graph of the temperature over time as well as the high temp and low temp shown on the graph and the current temperature.
+
+![](doc/images/ss/GraphScreen.png)  
+
+Another button press takes you to the Info screen which shows various information such as the version of *JAWS*, the hostname, IP address, and WiFi signal strength.
+
+![](doc/images/ss/InfoScreen.png)
+
+Press the button again and you will be taken to the "Off" screen. You'll see the word "Off..." display for 2 seconds and then the screen will go black. Pressing the button at any time will move back to the Time screen and the cycle begins again.
 
 <a name="dev-info"></a>
 ## Operational Info for Developers
 
 ### Developer Endpoints and the Developer Menu
 
-There are a number of web endpoints for developers that can help with extending and debugging *JAWS*. Each of the endpoints is listed below. Though it is not normally part of the main menu, you can get to an additional page of options by entering the url `http://[JAWS_Address]/dev` into your browser. If you wish, you can make it part of the main menu by going to `http://[JAWS_Address]/dev/menu/enabled`. Behind the scenes this has the effect of adding this line to the settings. 
+**Developer Menu**
+
+There are a number of web endpoints for developers that can help with extending and debugging *JAWS*. Each of the endpoints is listed below. Though it is not normally part of the main menu, you can get to an additional page of options by entering the url `http://[JAWS_Address]/dev` into your browser. If you wish, you can make it part of the main menu by going to `http://[JAWS_Address]/dev/updateSettings?showDevMenu=on`. Behind the scenes this has the effect of adding this line to the settings:
 
 ````
 ...
   "showDevMenu": true,
 ...
 ````  
-You can disable the dev menu using `http://[JAWS_Address]/dev/menu/disabled`.
+You can disable the dev menu using `http://[JAWS_Address]/dev/updateSettings`.
+
+**Viewing your settings**
+
+It can sometimes be useful to see all the settings in their JSON representation. The `/dev` page has a `View Settings` button which will return a page with the JSON representation of the settings. You can also get to this page directly with the url `http://[MultiMon_Adress]/dev/settings`. If you save these settings as a file named `settings.json` and place it in your `data` directory, it can be uploaded to your device using `ESP8266 Sketch Data Uploader`. There is no need to do this, but developers may find it useful to easily switch between batches of settings.
+
+The `/dev` page also has a `View WebThing Settings` button which will return a page with the JSON representation of the WebThing settings. This includes things such as the hostname, API keys, and the web color scheme.
+
+**Screenshots**
+
+Similarly you can get a screen shot of whatever is currently displayed on the device using the `Take a screen shot` button. This will display an image in your browser which corresponds to the current content of the display. You can also get to this page directly with the url `http://[MultiMon_Adress]/dev/screenShot`.
+
+**Rebooting**
+Finally, the `/dev` page also has a `Request Reboot` button. If you press the button you will be presented with a popup in your browser asking if you are sure. If you confirm, your *JAWS* device will immediately reboot as if the reset button had been pressed.
 
 ### Optional Integration with HomeBridge
 
