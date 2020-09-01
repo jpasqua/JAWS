@@ -184,7 +184,6 @@ namespace JAWSWebUI {
     }
 
     void updateSettings() {
-dumpArgs();
       if (!WebUI::authenticationOK()) { return; }
       Log.trace("Web Request: /dev/updateSettings");
 
@@ -240,7 +239,7 @@ dumpArgs();
       if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
       else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
       else if (screen == F("config")) {
-        JAWS::SSID = "jaws-nnnnnn";
+        JAWS::SSID = "jaws60750b";
         GUI::showScreen(GUI::ScreenName::Config);
       }
 
