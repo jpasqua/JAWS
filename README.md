@@ -99,7 +99,7 @@ The complete list of required hardware and assembly instructions can be found on
 <a name="simple_module"></a>
 #### Simple Weather Module
 
-If you want to have a simple weather sensor that does not have solar charging, you can use a standard ESP8266 with a BME280 sensor. For example, you may want a module in the garage, a shed, the attic, etc. For these applications (typically indoors or otherwise protected), you may also have a display to display readings locally. You can even use an integrated module like [this one](https://usa.banggood.com/Nodemcu-Wifi-And-NodeMCU-ESP8266-0_96-Inch-OLED-Module-Development-Board-p-1154759.html?cur_warehouse=CN) that has the display pre-integrated.
+If you want to have a simple weather sensor that does not have solar charging, you can use a standard ESP8266 with a BME280 sensor. For example, you may want a module in the garage, a shed, the attic, etc. For these applications (typically indoors or otherwise protected), you may also have a display to show the readings locally. You can even use an integrated module like [this one](https://usa.banggood.com/Nodemcu-Wifi-And-NodeMCU-ESP8266-0_96-Inch-OLED-Module-Development-Board-p-1154759.html?cur_warehouse=CN) that has the display pre-integrated.
 
 #### Additional Sensors
 
@@ -242,7 +242,10 @@ By adding a local display and a push button, *JAWS* can provide a very simple GU
 
 Interacting with the device requires a single momentary push button. You must tell *JAWS* about the hardware you chose and how you chose to connect it. This is done in the  `HWConfig.h` file. Two preconfigured hardware configurations are provided in the template, but you may also customize the settings. If you are running short on ground pins, the push button can be configured to use another ESP8266 pin as a "spare" ground. Just select the pin you'd like to use this way and the code will configure it for output and set it low.
 
-**Note**: `HWConfig.h` is not checked into github - you must create it based on the provided template. Only the template (`HWConfigTemplate.h`) is checked in.
+**Notes**:
+
+* The BME sensor and the display share pins. They are I2C devices and each has a unique address. Default values for these addresses are built into the code and you shouldn't have to touch them. So, for example, if you are connecting your BME sensor to pins `D2` and `D5`, then connect your display to those pins also.
+* `HWConfig.h` is not checked into github - you must create it based on the provided template. Only the template (`HWConfigTemplate.h`) is checked in.
 
 ### Using the GUI
 
