@@ -195,9 +195,7 @@ namespace JAWSWebUI {
       Log.trace(F("Web Request: /dev/screenShot"));
       if (!WebUI::authenticationOK()) { return; }
 
-      if (HAS_GUI) {
-        WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
-      }
+      WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
     }
 
     void displayDevPage() {
@@ -232,17 +230,15 @@ namespace JAWSWebUI {
 
     void forceScreen() {
       Log.trace(F("Web Request: /dev/forceScreen"));
-      if (HAS_GUI) {
-        if (!WebUI::authenticationOK()) { return; }
-        String screen = WebUI::arg(F("screen"));
-        if (screen.isEmpty()) return;
+      if (!WebUI::authenticationOK()) { return; }
+      String screen = WebUI::arg(F("screen"));
+      if (screen.isEmpty()) return;
 
-        if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
-        else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
-        else if (screen == F("config")) {
-          JAWS::SSID = "jaws60750b";
-          GUI::showScreen(GUI::ScreenName::Config);
-        }
+      if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
+      else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
+      else if (screen == F("config")) {
+        JAWS::SSID = "jaws60750b";
+        GUI::showScreen(GUI::ScreenName::Config);
       }
       WebUI::redirectHome();
     }
