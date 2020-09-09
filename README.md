@@ -80,6 +80,7 @@ The primary functional areas of *JAWS* are given below. You don't need to know t
 * `GUI` + `Screen`
 	* `GUI` is the primary interface used to cause `Screens` to be displayed and updated, and for user input (button presses) to be processed.
 	* The heavy lifting for this is done by specialized implementations of the `Screen` class. There is a `TimeScreen`, a `GraphScreen`, an `InfoScreen` and so on. Each screen is responsible for displaying and updating the associated information.
+	* **Note**: There is a file named `NoGUI.cpp` which contains stub implementations of the functions in the GUI namespace. If there is no attached display, it is used (automatically) in place of `GUI.cpp`.
 * `clients`
 	* The clients provide access to data from sensors. In the future the clients could provide information from other sources as well.
 * `HWConfig.h` is used to provide configuration information related to the *JAWS* hardware. For example, if you have an attached display and input button, they are described here. Similarly, any additional (optional) sensors are configured here. **Note**: `HWConfig.h` is not checked into github - you must create it based on the provided template (`HWConfigTemplate.h`) which is checked in.
