@@ -86,7 +86,6 @@ namespace JAWS {
 
     void prepIO() {
       Wire.begin(SDA_PIN, SCL_PIN);
-      if (BUTTON_LOW_PIN != -1) pinMode(BUTTON_LOW_PIN, LOW);
     }
 
     void prepSensors() {
@@ -94,8 +93,8 @@ namespace JAWS {
         settings.tempCorrection,
         settings.humiCorrection,
         WebThing::settings.elevation);
-      bme.begin();  
-      if (DS18B20_PIN != -1) {
+      bme.begin(BME_I2C_ADDR);  
+      if (DS18B20_PIN != -1) {  // Optional temperature sensor
         tempSensor = new DS18B20();
         tempSensor->begin(DS18B20_PIN, settings.tempCorrection);
       } else tempSensor = NULL;
@@ -112,7 +111,7 @@ namespace JAWS {
     void configModeCallback(String &ssid, String &ip) {
       (void)ip; // We don't use this parameter - avoid a warning
       SSID = ssid;
-      if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Config);
+      GUI::showScreen(GUI::ScreenName::Config);
     }
   } // ----- END: JAWS::Internal namespace
 
@@ -176,22 +175,22 @@ void setup() {
   Internal::prepIO();               // Prepare any I/O pins used locally
 
   // Only start the GUI if we have a display attached and are *not* in power saver mode
-  if (settings.hasGUI) GUI::init(true);
+  GUI::init(true);
 
   Internal::ensureWebThingSettings();         // Override any pertinent settings in WebThing
   WebThing::notifyConfigChange(Internal::baseConfigChange);
   WebThing::notifyOnConfigMode(Internal::configModeCallback);
 
-  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::WiFi);
+  GUI::showScreen(GUI::ScreenName::WiFi);
   Internal::prepWebUI();            // Setup the WebUI, network, etc.
-  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Splash);
+  GUI::showScreen(GUI::ScreenName::Splash);
 
   Internal::prepSensors();
 
   JAWSBlynk::init();                // Setup the Blynk Client
 
   processReadings();                // Get our first set of readings!
-  if (settings.hasGUI) GUI::showScreen(GUI::ScreenName::Time);
+  GUI::showScreen(GUI::ScreenName::Time);
 
   WebThing::postSetup();            // Finalize setup of the WebThing - Must be last
 }
@@ -201,7 +200,7 @@ void loop() {
 
   WebThing::loop();
   JAWSBlynk::run();
-  if (settings.hasGUI) GUI::loop();
+  GUI::loop();
 
   uint32_t curMillis = millis();
   if (curMillis - lastSampleTime > (WebThing::settings.processingInterval * 60 * 1000L)) {
