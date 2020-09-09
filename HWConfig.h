@@ -1,6 +1,8 @@
 #ifndef HWConfig_h
 #define HWConfig_h
 
+#include <Arduino.h>
+
 // ----- BEGIN: Constants used in the rest of the file. Do not change these
 // An enumeration of allowable values for HWConfig
 #define Config_Custom        1
