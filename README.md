@@ -91,19 +91,51 @@ The primary functional areas of *JAWS* are given below. You don't need to know t
 
 ### Hardware
 
+#### Configuring Your Hardware
+
+There are many ways to assemble a working weather station and a couple of primary examples are given below. Regardless of which you choose, you need to provide some configuration information by editing the file `HWConfig.h`. In it you will specify things such as which pins to use for the I2C bus, whether there is a display attached for a local GUI, and whether there is a secondary sensor attached. There are a number of pre-configured blocks of settings you can choose from, or you can specify all the details for yourself.
+
+Notes:
+
+* The BME sensor and the display (if you have one) are both I2C devices and therefore share pins. You can configure which pair of pins to use or use one of the sample configurations.
+* The BME sensor and the display each have a unique address. The typical addresses for these devices is already set in `HWConfig.h`, but you can change them. When you physically connect the hardware, make sure that the BME sensor and the display are both connected to the same pins.
+
+
+
 <a name="full-hw"></a>
 #### Full Weather Station
 
-The complete list of required hardware and assembly instructions can be found on the [instructables site](https://www.instructables.com/id/Solar-Powered-WiFi-Weather-Station-V20/). There is one variation in the assembly instructions. On the PCB for the project (available on [PCBWay](https://www.pcbway.com/project/gifts_detail/Solar_Powered_WiFi_Weather_Station_V2_0.html)), The D7 pin is exposed on a female header along with VCC and GND. In this project D7 is used as to override the setting for low power mode. You can build the board as shown and then use a jumper from D7 to GND in order to activate the override. What I did instead was to place another of the small slide switches in that spot. I used only two of the three legs so that I could easily connect D7 to GND. The software uses a pullup on D7 so it is normally high (meaning no override of the setting for low power mode).
+<img src="doc/images/FWS.jpg">
+
+You can build a full solar-powered weather station using the list of required hardware and assembly instructions from the [instructables site](https://www.instructables.com/id/Solar-Powered-WiFi-Weather-Station-V20/). There is even a [PCB](https://www.pcbway.com/project/gifts_detail/Solar_Powered_WiFi_Weather_Station_V2_0.html) available which makes for a very neat result.
+
+In a few minutes you'll be reading about [low power mode](#ulpm) and it will mention using a switch/jumper to bypass it. You'll need to add that switch or jumper to the PCB. I used the same type of slide switch used for the power switch. Place it on the board on the pads labeled `GND`, `D7`, and `VCC`. Sliding the switch so it connects D7 to GND bypasses low-power mode.
 
 <a name="simple_module"></a>
 #### Simple Weather Module
+<img src="doc/images/Module.jpg">
 
 If you want to have a simple weather sensor that does not have solar charging, you can use a standard ESP8266 with a BME280 sensor. For example, you may want a module in the garage, a shed, the attic, etc. For these applications (typically indoors or otherwise protected), you may also have a display to show the readings locally. You can even use an integrated module like [this one](https://usa.banggood.com/Nodemcu-Wifi-And-NodeMCU-ESP8266-0_96-Inch-OLED-Module-Development-Board-p-1154759.html?cur_warehouse=CN) that has the display pre-integrated.
 
+### Adding a Display
+
+By adding a local display and a push button, *JAWS* can provide a very simple GUI which reads out the primary values from the weather sensor. The display must be:
+
+* 128x64 pixels wide
+* Based on either an SH1106 or an SSD1306 driver
+* Driven by I2C
+* Compatible with the [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306) library (most are)
+
+Interacting with the device requires a single momentary push button. You must tell *JAWS* about the hardware you chose and how you chose to connect it. This is done in the  `HWConfig.h` file.
+
+**Notes**:
+
+* **Important**: There is a setting which tells *JAWS* whether a local display is attached. It is `false` by default which means that even if you connect a display, it won't show anything until you change the setting. The easiest way to do this is to modify the default value of `hasGUI` from `false` to `true` in `JAWSSettings.h`.
+* `HWConfig.h` is not checked into github - you must create it based on the provided template. Only the template (`HWConfigTemplate.h`) is checked in.
+
 #### Additional Sensors
 
-*JAWS* normally takes all of its readings (temperature, humidity, and barometric pressure) from a single BME280 sensor. These sensors have taken some heat (no pun intended) for yielding inaccurate / inconsistent temperature readings. You may wish to use a sensor designed for temperature such as the [DS18B20](https://www.adafruit.com/product/374). If you add one of these sensors, you'll need to enable it by modifying the `HWConfig.h` file. You'll see a line that designates which pin the DS18B20 sensor is connected to. If the pin is set to `-1`, then *JAWS* assumes no additional sensor is attached. If it is not `-1` then *JAWS* will access the DS18B20 using that pin. It will use the temperature value from the DS18B20 in place of the reading from the BME280. If you use the extra sensor, you'll also need a couple of [extra libraries](#libs).
+*JAWS* normally takes all of its readings (temperature, humidity, and barometric pressure) from a single BME280 sensor. These sensors have taken some heat (no pun intended) for yielding inaccurate / inconsistent temperature readings. You may wish to use a sensor designed for temperature such as the [DS18B20](https://www.adafruit.com/product/374). If you add one of these sensors, you'll need to enable it in `HWConfig.h` file. You'll see a line that designates which pin the DS18B20 sensor is connected to. If the pin is set to `-1`, then *JAWS* assumes no additional sensor is attached. If it is not `-1` then *JAWS* will access the DS18B20 using that pin. It will use the temperature value from the DS18B20 in place of the reading from the BME280.
 
 ### 3D Model
 The original housing for this project as well as some others are available on thingiverse. Here is a sampling:
@@ -136,7 +168,7 @@ First things first: JAWS is designed for low power operation. The way it achieve
 
 When you power-up JAWS for the first time, low power mode will be disabled. That means you can interact with the Web interface freely to get it configured just the way you want it before [turning on low power mode](#low-power-mode). Once you've enabled low power mode and rebooted, *JAWS* will enter the `power-on, take-readings, power-off`, cycle mentioned above.
 
-But what if you want to change a setting? You won't be able to get to the Web interface because JAWS will power itself before you have a chance to do anything! That's where the override mode comes in. If you're using the (full hardware)[] implementation described above, you'll have a switch/jumper you can use to override low power mode in hardware. Flip that switch and reboot.
+But what if you want to change a setting? You won't be able to get to the Web interface because JAWS will power itself before you have a chance to do anything! That's where the override mode comes in. If you're using the [full hardware](#full-hw) implementation described above, you'll have a switch/jumper you can use to override low power mode in hardware. Flip that switch and reboot.
 
 At that point *JAWS* will not enter low power mode even though it has been configured to do so. Now you are free to connect to the web interface and change any settings you'd like (including the setting for low power mode). When you've made your changes and saved them, you can flip the switch/jumper back and reboot. *JAWS* will now go back to honoring the power mode setting.
 
@@ -193,7 +225,6 @@ Now that the General Settings are out of the way, you can adjust settings that a
 
 - **Description**: A description that is useful to the user. For example, the location of the weather station like "Back Yard" or "Garden".
 - **Use Metric**: Determine whether to use metric or imperial units when sending values to Blynk or displaying values in the interface
-- **Attached Display?**: Select this if your device has an attached display. When selected, readings will be shown locally in addition to being sent to Blynk.
 - **Blynk API Key**: An API key established by the user when configuring the Blynk app.
 - **Temperature Correction**: A value (positive or negative) to add to the temperature sensor reading to calibrate it to a reading you've taken with a known correct device. Note that this is always in degrees celsius even if the values are to be displayed in imperial units.
 - **Humidity Correction**: A value (positive or negative) to add to the humidity sensor reading to calibrate it to a reading you've taken with a known correct device. 
@@ -229,25 +260,7 @@ Blynk QR Code:<br><img src="doc/images/BlynkQRCode.jpg" width="250" /></img><br>
 
 You can always access the current JAWS readings via the Web UI. This is the same UI you used to configure JAWS. Just go to the home page and you will see current readings. You'll also find an item in the hamburger menu that allows you to force a reading.
 
-## GUI
-
-### Configuring for a GUI
-
-By adding a local display and a push button, *JAWS* can provide a very simple GUI which reads out the primary values from the weather sensor. The display must be:
-
-* 128x64 pixels wide
-* Based on either an SH1106 or an SSD1306 driver
-* Driven by I2C
-* Compatible with the [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306) library (most are)
-
-Interacting with the device requires a single momentary push button. You must tell *JAWS* about the hardware you chose and how you chose to connect it. This is done in the  `HWConfig.h` file. Two preconfigured hardware configurations are provided in the template, but you may also customize the settings. If you are running short on ground pins, the push button can be configured to use another ESP8266 pin as a "spare" ground. Just select the pin you'd like to use this way and the code will configure it for output and set it low.
-
-**Notes**:
-
-* The BME sensor and the display share pins. They are I2C devices and each has a unique address. Default values for these addresses are built into the code and you shouldn't have to touch them. So, for example, if you are connecting your BME sensor to pins `D2` and `D5`, then connect your display to those pins also.
-* `HWConfig.h` is not checked into github - you must create it based on the provided template. Only the template (`HWConfigTemplate.h`) is checked in.
-
-### Using the GUI
+## Using the GUI
 
 The GUI is organized into a simple set of screens. You navigate through the screens by pressing the attached button. A press moves from the current screen to the next. The sequence is as follows:
 
@@ -288,14 +301,9 @@ Press the button again and you will be taken to the "Off" screen. You'll see the
 
 **Developer Menu**
 
-There are a number of web endpoints for developers that can help with extending and debugging *JAWS*. Each of the endpoints is listed below. Though it is not normally part of the main menu, you can get to an additional page of options by entering the url `http://[JAWS_Address]/dev` into your browser. If you wish, you can make it part of the main menu by going to `http://[JAWS_Address]/dev/updateSettings?showDevMenu=on`. Behind the scenes this has the effect of adding this line to the settings:
+There are a number of web endpoints for developers that can help with extending and debugging *JAWS*. Each of the endpoints is listed below. Though it is not normally part of the main menu, you can get to an additional page of options by entering the url `http://[JAWS_Address]/dev` into your browser. Once you go to that page, you'll get an option to enable the Developer menu item which will make it easier to get to in the future.
 
-````
-...
-  "showDevMenu": true,
-...
-````  
-You can disable the dev menu using `http://[JAWS_Address]/dev/updateSettings`.
+Internally this has the effect of changing the value of the `showDevMenu` setting. If you prefer to have the Developer menu on by default, you can edit `JAWSSettings.h` and initialize  `showDevMenu` to `true`.
 
 **Viewing your settings**
 
