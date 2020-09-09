@@ -27,7 +27,6 @@ public:
   // ----- Settings
   String  description = "Weather Station";  // User's description of their weather station
   bool    useMetric = false;                // Imperial or Metric
-  bool    hasGUI = false;                   // Is there a display attached to present a GUI
   String  blynkAPIKey = "";                 // Your API Key from Blynk
   float   tempCorrection = 0.0;             // Correction to the temp reading - always in Celsius
   float   humiCorrection = 0.0;             // Correction to the humidty sensor reading
