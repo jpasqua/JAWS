@@ -29,7 +29,6 @@ namespace GUI {
 
 
   void loop();
-  void noteNewSample(float val);
 
   /**
    * Dump the pixel values from the display to the specified stream in the form
