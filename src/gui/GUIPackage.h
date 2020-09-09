@@ -20,11 +20,6 @@
 
 namespace GUIPackage {
   //
-  // Types
-  //
-  typedef enum {Wifi, Config, Splash, Temp, Humi, Real, All, Graph, Time, Off, N_Screens, NoScreen} ScreenName;
-
-  //
   // Constants
   //
   static const uint8_t FmtBufSize = 32;  // Size of the temp graph data
