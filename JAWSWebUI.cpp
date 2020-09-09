@@ -93,7 +93,6 @@ namespace JAWSWebUI {
       auto mapper =[](String &key) -> String {
         if (key == "DESC") return WebThing::encodeAttr(JAWS::settings.description);
         if (key == "USE_METRIC")  return checkedOrNot[JAWS::settings.useMetric];
-        if (key == "HAS_GUI")  return checkedOrNot[JAWS::settings.hasGUI];
         if (key == "BLYNK_KEY")  return JAWS::settings.blynkAPIKey;
         if (key == "TEMP_CORRECT") return String(JAWS::settings.tempCorrection);
         if (key == "HUMI_CORRECT") return String(JAWS::settings.humiCorrection);
@@ -137,7 +136,6 @@ namespace JAWSWebUI {
 
       JAWS::settings.description = WebUI::arg("description");
       JAWS::settings.useMetric = WebUI::hasArg("useMetric");
-      JAWS::settings.hasGUI = WebUI::hasArg("hasGUI");
       JAWS::settings.blynkAPIKey = WebUI::arg("blynkAPIKey");
       JAWS::settings.tempCorrection = WebUI::arg("tempCorrection").toFloat();
       JAWS::settings.humiCorrection = WebUI::arg("humiCorrection").toFloat();
@@ -197,7 +195,9 @@ namespace JAWSWebUI {
       Log.trace(F("Web Request: /dev/screenShot"));
       if (!WebUI::authenticationOK()) { return; }
 
-      WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
+      if (HAS_GUI) {
+        WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
+      }
     }
 
     void displayDevPage() {
@@ -232,17 +232,18 @@ namespace JAWSWebUI {
 
     void forceScreen() {
       Log.trace(F("Web Request: /dev/forceScreen"));
-      if (!WebUI::authenticationOK()) { return; }
-      String screen = WebUI::arg(F("screen"));
-      if (screen.isEmpty()) return;
+      if (HAS_GUI) {
+        if (!WebUI::authenticationOK()) { return; }
+        String screen = WebUI::arg(F("screen"));
+        if (screen.isEmpty()) return;
 
-      if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
-      else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
-      else if (screen == F("config")) {
-        JAWS::SSID = "jaws60750b";
-        GUI::showScreen(GUI::ScreenName::Config);
+        if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
+        else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
+        else if (screen == F("config")) {
+          JAWS::SSID = "jaws60750b";
+          GUI::showScreen(GUI::ScreenName::Config);
+        }
       }
-
       WebUI::redirectHome();
     }
   }   // ----- END: JAWSWebUI::Dev
