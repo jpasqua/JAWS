@@ -192,12 +192,12 @@ At this point it will make a web interface available. You can connect using eith
 - **IP Access**: You need to determine the IP Address used by the weather station. You have a couple of choices here:
     - If you are still connected via USB, you will see the IP address in the Arduino Serial Monitor
     - You can use a scanning tool or your router to look for the device on your network
-- **Hostname**: If your system supports mDNS (e.g. a Mac or a Raspberry Pi running avahi) you can connect to hostname.local in your browser. Hostname will either by a name that you set in Settings.h or a name of the form `jawsNNNNNN`.
+- **Hostname**: If your system supports mDNS (e.g. a Mac or a Raspberry Pi running avahi) you can connect to hostname.local in your browser. Hostname will either be a name that you set in Settings.h or a name of the form `jawsNNNNNN`.
 
 
 ### Configuring JAWS
 
-Once connected, you can use the web interface to configure and change settings regarding your printers, how information is displayed, the weather configuration, and more. You get to the settings by selecting an item from the [hamburger menu](https://en.wikipedia.org/wiki/Hamburger_button) in the top left of the web page. Before getting to settings that are specific to *JAWS*, you need to configure some general information for your web-connected device including a username / password. You do this using the *General Settings* menu item as described below.
+Once connected, you can use the web interface to configure various settings of your weather station. You get to the settings by selecting an item from the [hamburger menu](https://en.wikipedia.org/wiki/Hamburger_button) in the top left of the web page. Before getting to settings that are specific to *JAWS*, you need to configure some general information for your web-connected device including a username / password. You do this using the *General Settings* menu item as described below.
 
 Note: If you have mounted your display in an enclosure in a way that is upside-down relative to the default configuration, you're image will be upside down until you get around to the [Configure JAWS)[] menu. This isn't a problem since the configuration will be happening in the Web UI, not on the display, but if it bothers you, you can skip to that step to flip the display orientation and then come back here.
 
@@ -317,6 +317,7 @@ The `/dev` page also has a `View WebThing Settings` button which will return a p
 Similarly you can get a screen shot of whatever is currently displayed on the device using the `Take a screen shot` button. This will display an image in your browser which corresponds to the current content of the display. You can also get to this page directly with the url `http://[MultiMon_Adress]/dev/screenShot`.
 
 **Rebooting**
+
 Finally, the `/dev` page also has a `Request Reboot` button. If you press the button you will be presented with a popup in your browser asking if you are sure. If you confirm, your *JAWS* device will immediately reboot as if the reset button had been pressed.
 
 ### Optional Integration with HomeBridge
