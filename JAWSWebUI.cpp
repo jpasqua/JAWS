@@ -133,6 +133,8 @@ namespace JAWSWebUI {
     void updateJAWSConfig() {
       if (!WebUI::authenticationOK()) { return; }
       Log.trace("JAWSWebUI: Handle Update Config");
+      float oldTempCorrection = JAWS::settings.tempCorrection;
+      float oldHumiCorrection = JAWS::settings.humiCorrection;
 
       JAWS::settings.description = WebUI::arg("description");
       JAWS::settings.useMetric = WebUI::hasArg("useMetric");
@@ -143,7 +145,9 @@ namespace JAWSWebUI {
 
       // The description MAY have changed. Update the title just in case
       WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
-
+      if (oldTempCorrection != JAWS::settings.tempCorrection || oldHumiCorrection != JAWS::settings.humiCorrection) {
+        JAWS::updateCorrections(JAWS::settings.tempCorrection, JAWS::settings.humiCorrection);
+      }
       WebUI::redirectHome();
     }
 

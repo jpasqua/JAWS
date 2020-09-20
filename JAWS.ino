@@ -135,6 +135,14 @@ namespace JAWS {
     return formattedTime(now() - (millis() - readings.timestamp)/1000L);
   }
 
+  void updateCorrections(float t, float h) {
+      bme.setAttributes(                // Set up sensor attributes and initialize
+        settings.tempCorrection,
+        settings.humiCorrection,
+        WebThing::settings.elevation);
+      if (tempSensor) { tempSensor->setAttributes(settings.tempCorrection); }
+    }
+
   void processReadings() {
     bme.takeReadings(readings);
     if (tempSensor != NULL) {
