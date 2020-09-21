@@ -18,8 +18,9 @@ public:
     // Determine the range of values in the sample data
     float graphMin =  1000.0;
     float graphMax = -1000.0;
-    for (int i = 0; i < JAWS::History::nSamples; i++) {
-      float cur = JAWS::outputTemp(JAWS::History::getSample(i));
+    int nSamples = JAWS::history.size();
+    for (int i = 0; i < nSamples; i++) {
+      float cur = JAWS::outputTemp(JAWS::history[i].temp);
       if (cur < graphMin) { graphMin = cur; }
       if (cur > graphMax) { graphMax = cur; }
     }
@@ -30,8 +31,8 @@ public:
     float rangeLo = graphMin - rangePadding;
 
     oled->clear();
-    for (int i = 0; i < JAWS::History::nSamples; i++) {
-      float cur = JAWS::outputTemp(JAWS::History::getSample(i));
+    for (int i = 0; i < nSamples; i++) {
+      float cur = JAWS::outputTemp(JAWS::history[i].temp);
       
       float percentIntoRange = (cur - rangeLo)/displayedRange;
       percentIntoRange = 1.0 - percentIntoRange; // Hi values are at the top which are lower pixel values

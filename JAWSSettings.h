@@ -31,6 +31,7 @@ public:
   float   tempCorrection = 0.0;             // Correction to the temp reading - always in Celsius
   float   humiCorrection = 0.0;             // Correction to the humidty sensor reading
   bool    showDevMenu = false;
+  String  tempColor;                        // Color of the temperature line in charts
 
 private:
   // ----- Constants -----

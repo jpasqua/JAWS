@@ -4,6 +4,7 @@
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
 //                                  Third Party Libraries
+#include <CircularBuffer.h>
 #include <WebThing.h>
 //                                  Local Includes
 #include "JAWSSettings.h"
@@ -26,14 +27,18 @@ namespace JAWS {
   String  baroUnits();
   char    *formattedTime(time_t theTime);
   char    *timeOfLastReading();
-  void    updateCorrections(float t, float h);
-  
-  namespace History {
-    extern const uint8_t MaxSamples;
-    extern uint8_t nSamples;
-    float getSample(uint8_t index);
-    void appendSample(float value);
-  }
+  void    updateCorrections();
+
+  class TempReading {
+  public:
+    TempReading() { }
+    TempReading(float t, uint32_t ts) : temp(t), timestamp(ts) { }
+    float temp;
+    uint32_t timestamp;
+  };
+  const  uint8_t MaxSamples = 128;
+  extern CircularBuffer<TempReading, MaxSamples> history;
+  void emitHistoryAsJSON(Stream& s);
 }
 
 #endif  // JAWS_h

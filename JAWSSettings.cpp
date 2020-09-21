@@ -32,6 +32,7 @@ void JAWSSettings::fromJSON(JsonDocument &doc) {
   blynkAPIKey = doc["blynkAPIKey"].as<String>();
   tempCorrection = doc["tempCorrection"];
   humiCorrection = doc["humiCorrection"];
+  tempColor = String(doc["tempColor"]|"#4e7a27");
 
   logSettings();
 }
@@ -43,6 +44,7 @@ void JAWSSettings::toJSON(JsonDocument &doc) {
   doc["blynkAPIKey"] = blynkAPIKey;
   doc["tempCorrection"] = tempCorrection;
   doc["humiCorrection"] = humiCorrection;
+  doc["tempColor"] = tempColor;
 }
 
 void JAWSSettings::logSettings() {
@@ -53,5 +55,6 @@ void JAWSSettings::logSettings() {
   Log.verbose("  blynkAPIKey = %s", blynkAPIKey.c_str());
   Log.verbose("  tempCorrection = %F", tempCorrection);
   Log.verbose("  humiCorrection = %F", humiCorrection);
+  Log.verbose("  tempColor = %s", tempColor.c_str());
 }
 

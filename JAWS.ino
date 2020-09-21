@@ -29,6 +29,8 @@
 
 
 namespace JAWS {
+  const String Version = "0.3.0";
+
   /*------------------------------------------------------------------------------
    *
    * Global State
@@ -37,38 +39,9 @@ namespace JAWS {
   BMESensor bme;
   DS18B20*  tempSensor;
   Readings  readings;
-
   JAWSSettings settings;
+  CircularBuffer<TempReading, MaxSamples> history;
   String SSID = "";
-  const String Version = "0.3.0";
-
-  namespace History {
-    const     uint8_t MaxSamples = 128;
-    float     samples[MaxSamples];  // Circular buffer of samples
-    uint32_t  times[MaxSamples];    // Circular buffer of timestamps
-    uint8_t   nSamples = 0;         // Sample Data: Number of samples stored so far
-    int       sampleHead = 0;       // Sample Data: Location to store the next sample
-
-    float getSample(uint8_t index) {
-      if (index >= nSamples) return 0.0f; // Index out of range
-      if (nSamples == MaxSamples) index = (sampleHead + index) % MaxSamples;
-      return samples[index];
-    }
-
-    void getSample(uint8_t index, float& sample, uint32_t& timestamp){
-      if (index >= nSamples) { sample = 0.0; timestamp = 0; return; } // Index out of range
-      if (nSamples == MaxSamples) index = (sampleHead + index) % MaxSamples;
-      sample = samples[index];
-      timestamp = times[index];
-    }
-
-    void appendSample(float value) {
-      samples[sampleHead] = value;
-      times[sampleHead] = now();
-      sampleHead = (sampleHead + 1) % MaxSamples;
-      if (nSamples != MaxSamples) nSamples++;
-    }
-  }
 
   namespace Internal {
     static const String   SettingsFileName = "/settings.json";
@@ -115,6 +88,73 @@ namespace JAWS {
     }
   } // ----- END: JAWS::Internal namespace
 
+  namespace History {
+    static const String HistoryFilePath = "/history.json";
+    static const uint32_t MaxHistoryFileSize = 8192;
+
+
+    void loadHistoricalData() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" 
+      File historyFile = SPIFFS.open(HistoryFilePath, "r");
+#pragma GCC diagnostic pop
+
+      size_t size = 0;
+      if (!historyFile) {
+        Log.error(F("Failed to open history file for read: %s"), HistoryFilePath.c_str());
+      } else {
+        size = historyFile.size();
+        if (size > MaxHistoryFileSize) {
+          Log.warning(F("History file is too big: %d"), size);
+          return;
+        }    
+      }
+
+      DynamicJsonDocument doc(MaxHistoryFileSize);
+      auto error = deserializeJson(doc, historyFile);
+      historyFile.close();
+      if (error) {
+        Log.warning(F("Failed to parse history file: %s. Size: %d"), error.c_str(), size);
+        return;
+      }
+
+      // Log.verbose("Historical data:");
+      // serializeJsonPretty(doc, Serial);
+
+      TempReading data;
+      int32_t tzOffset = WebThing::getGMTOffset();
+      // Note that timestamps are externalized as GMT time. When we
+      // internalize them, we need to adjust back to local time
+      JsonArrayConst historyArray = doc[F("history")];
+      for (JsonObjectConst reading : historyArray) {
+        data.timestamp = reading["ts"];
+        data.timestamp += tzOffset;
+        data.temp = reading["t"];
+        history.push(data);
+      }
+
+      // Log.verbose("History as read from file:");
+      // emitHistoryAsJSON(Serial);
+    }
+
+    void storeHistoricalData() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" 
+      File historyFile = SPIFFS.open(HistoryFilePath, "w");
+#pragma GCC diagnostic pop
+
+      if (!historyFile) {
+        Log.error(F("Failed to open history file for writing: %s"), HistoryFilePath.c_str());
+        return;
+      }
+
+      emitHistoryAsJSON(historyFile);
+
+      Log.verbose("History data written");
+      historyFile.close();
+    }
+  } // ----- END: JAWS::History namespace
+
   /*------------------------------------------------------------------------------
    *
    * Exported Functions
@@ -135,7 +175,7 @@ namespace JAWS {
     return formattedTime(now() - (millis() - readings.timestamp)/1000L);
   }
 
-  void updateCorrections(float t, float h) {
+  void updateCorrections() {
       bme.setAttributes(                // Set up sensor attributes and initialize
         settings.tempCorrection,
         settings.humiCorrection,
@@ -156,7 +196,27 @@ namespace JAWS {
     }
     readings.timestamp = millis();
     JAWSBlynk::update();
-    History::appendSample(readings.temp);
+
+    TempReading r(readings.temp, now());
+    history.push(r);
+    History::storeHistoricalData();
+  }
+
+  void emitHistoryAsJSON(Stream& s) {
+    int32_t tzOffset = WebThing::getGMTOffset();
+    uint16_t size = history.size();
+    bool needsComma = false;
+    s.println("{ \"history\": [");
+
+    for (int i = 0; i < size; i++) {
+      TempReading data = history[i];
+      if (needsComma) s.println(",");
+      s.print("{ \"ts\":"); s.print(data.timestamp - tzOffset);
+      s.print(", \"t\":"); s.print(data.temp,1);
+      s.print(" }");
+      needsComma = true;
+    }
+    s.println("] }");
   }
 
 } // ----- END: JAWS namespace
@@ -192,6 +252,8 @@ void setup() {
   GUI::showScreen(GUI::ScreenName::WiFi);
   Internal::prepWebUI();            // Setup the WebUI, network, etc.
   GUI::showScreen(GUI::ScreenName::Splash);
+
+  History::loadHistoricalData();    // Load historical data AFTER we've established the time/tz
 
   Internal::prepSensors();
 

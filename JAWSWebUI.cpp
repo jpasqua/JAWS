@@ -34,13 +34,16 @@ namespace JAWSWebUI {
   // ----- BEGIN: JAWSWebUI::Internal
   namespace Internal {
     String Actions =
+      "<a class='w3-bar-item w3-button' href='/ChartPage'>"
+      "<i class='fa fa-bar-chart'></i> Charts</a>"
       "<a class='w3-bar-item w3-button' href='/displayJAWSConfig'>"
       "<i class='fa fa-cog'></i> Configure JAWS</a>"
       "<a class='w3-bar-item w3-button' href='/takeReadings'>"
       "<i class='fa fa-thermometer-three-quarters'></i> Take readings</a>";
     String DEV_ACTION =
       "<a class='w3-bar-item w3-button' href='/dev'>"
-      "<i class='fa fa-gears'></i> Dev Settings</a>";  }
+      "<i class='fa fa-gears'></i> Dev Settings</a>";
+  }
   // ----- END: JAWSWebUI::Internal
 
 
@@ -96,6 +99,7 @@ namespace JAWSWebUI {
         if (key == "BLYNK_KEY")  return JAWS::settings.blynkAPIKey;
         if (key == "TEMP_CORRECT") return String(JAWS::settings.tempCorrection);
         if (key == "HUMI_CORRECT") return String(JAWS::settings.humiCorrection);
+        if (key == "TEMP_CLR")  return JAWS::settings.tempColor;
         return "";
       };
 
@@ -103,6 +107,22 @@ namespace JAWSWebUI {
       templateHandler->send("/ConfigForm.html", mapper);
       WebUI::finishPage();
     }
+
+    void displayChartPage() {
+      Log.trace("Web Request: Display Chart Page");
+      if (!WebUI::authenticationOK()) { return; }
+
+      auto mapper =[](String &key) -> String {
+        if (key == "TEMP_CLR")  return JAWS::settings.tempColor;
+        if (key == "USE_METRIC")  return JAWS::settings.useMetric ? "true" : "false";
+        return "";
+      };
+
+      WebUI::startPage();
+      templateHandler->send("/ChartPage.html", mapper);
+      WebUI::finishPage();
+    }
+
   }   // ----- END: JAWSWebUI::Pages
 
 
@@ -146,7 +166,7 @@ namespace JAWSWebUI {
       // The description MAY have changed. Update the title just in case
       WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
       if (oldTempCorrection != JAWS::settings.tempCorrection || oldHumiCorrection != JAWS::settings.humiCorrection) {
-        JAWS::updateCorrections(JAWS::settings.tempCorrection, JAWS::settings.humiCorrection);
+        JAWS::updateCorrections();
       }
       WebUI::redirectHome();
     }
@@ -172,6 +192,15 @@ namespace JAWSWebUI {
       server->sendHeader("Cache-Control", "private, no-store");
       server->send(200, "application/json", json);
     }
+
+    void getHistory() {
+      auto provider = [](Stream& s) -> void {
+        JAWS::emitHistoryAsJSON(s);
+      };
+
+      WebUI::sendArbitraryContent("application/json", -1, provider);
+    }
+
   }   // ----- END: JAWSWebUI::Endpoints
 
 
@@ -259,11 +288,13 @@ namespace JAWSWebUI {
     WebUI::addMenuItems(actions);
 
     WebUI::registerHandler("/",                   Pages::displayHomePage);
+    WebUI::registerHandler("/ChartPage",          Pages::displayChartPage);
     WebUI::registerHandler("/displayJAWSConfig",  Pages::displayJAWSConfig);
 
     WebUI::registerHandler("/updateJAWSConfig",   Endpoints::updateJAWSConfig);
     WebUI::registerHandler("/takeReadings",       Endpoints::updateReadings);
     WebUI::registerHandler("/weather",            Endpoints::weather);
+    WebUI::registerHandler("/getHistory",         Endpoints::getHistory);
 
     WebUI::registerHandler("/dev",                Dev::displayDevPage);
     WebUI::registerHandler("/dev/reboot",         Dev::reboot);
