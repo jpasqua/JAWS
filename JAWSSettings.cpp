@@ -32,7 +32,8 @@ void JAWSSettings::fromJSON(JsonDocument &doc) {
   blynkAPIKey = doc["blynkAPIKey"].as<String>();
   tempCorrection = doc["tempCorrection"];
   humiCorrection = doc["humiCorrection"];
-  tempColor = String(doc["tempColor"]|"#4e7a27");
+  chartColors.temp = String(doc["chartColors"]["temp"]|"#4e7a27");
+  chartColors.avg = String(doc["chartColors"]["avg"]|"#ff00ff");
 
   logSettings();
 }
@@ -44,7 +45,8 @@ void JAWSSettings::toJSON(JsonDocument &doc) {
   doc["blynkAPIKey"] = blynkAPIKey;
   doc["tempCorrection"] = tempCorrection;
   doc["humiCorrection"] = humiCorrection;
-  doc["tempColor"] = tempColor;
+  doc["chartColors"]["temp"] = chartColors.temp;
+  doc["chartColors"]["avg"] = chartColors.avg;
 }
 
 void JAWSSettings::logSettings() {
@@ -55,6 +57,7 @@ void JAWSSettings::logSettings() {
   Log.verbose("  blynkAPIKey = %s", blynkAPIKey.c_str());
   Log.verbose("  tempCorrection = %F", tempCorrection);
   Log.verbose("  humiCorrection = %F", humiCorrection);
-  Log.verbose("  tempColor = %s", tempColor.c_str());
+  Log.verbose("  tempColor = %s", chartColors.temp.c_str());
+  Log.verbose("  avgColor  = %s", chartColors.avg.c_str());
 }
 

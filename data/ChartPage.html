@@ -13,7 +13,9 @@
   </div>
 
   <script>
-    const color_temp = '%TEMP_CLR%'
+    const Color_Temp = '%TEMP_CLR%'
+    const Color_Avg = '%AVG_CLR%'
+    const Num_MA_Samples = 10;
 
     function createOptions(theTitle) {
       return {
@@ -28,8 +30,9 @@
     function createDatasets() {
       return {
           datasets: [
-            { label: 'Temperature', borderColor: color_temp, fill: false, lineTension: 0, data: [] } ]
-        }
+            { label: 'Temperature', borderColor: Color_Temp, fill: false, lineTension: 0, data: [] },
+            { label: 'Moving Average', borderColor: Color_Avg, fill: false, lineTension: 0, data: [] } ]
+          }
     }
 
     var tempConfig = { type: 'line', data: createDatasets(), options: createOptions("Historical Temperature Data") };
@@ -37,11 +40,21 @@
 
     function prepData(theConfig, root) {
       theConfig.data.datasets[0].data = [];
+      theConfig.data.datasets[1].data = [];
+      var sum = 0;
+      var mean = 0;
       for (var i = 0; i < root.history.length; i++) {
         var timestamp = root.history[i].ts*1000
         var temperature = root.history[i].t;
-        if (!isMetric) temperature = temperature * 9/5 + 32
+        sum += temperature
+        if (i >= Num_MA_Samples) { sum -= root.history[i-Num_MA_Samples].t; mean = sum/Num_MA_Samples; }
+        else { mean = sum/(i+1); }
+        if (!isMetric) {
+          temperature = Math.round((temperature * 9/5 + 32)*10)/10
+          mean =  Math.round((mean * 9/5 + 32)*10)/10
+        }
         theConfig.data.datasets[0].data.push({x: timestamp, y: temperature})
+        theConfig.data.datasets[1].data.push({x: timestamp, y: mean})
       }
     }  
 

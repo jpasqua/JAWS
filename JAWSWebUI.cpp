@@ -99,7 +99,8 @@ namespace JAWSWebUI {
         if (key == "BLYNK_KEY")  return JAWS::settings.blynkAPIKey;
         if (key == "TEMP_CORRECT") return String(JAWS::settings.tempCorrection);
         if (key == "HUMI_CORRECT") return String(JAWS::settings.humiCorrection);
-        if (key == "TEMP_CLR")  return JAWS::settings.tempColor;
+        if (key == "TEMP_CLR")  return JAWS::settings.chartColors.temp;
+        if (key == "AVG_CLR")  return JAWS::settings.chartColors.avg;
         return "";
       };
 
@@ -113,7 +114,8 @@ namespace JAWSWebUI {
       if (!WebUI::authenticationOK()) { return; }
 
       auto mapper =[](String &key) -> String {
-        if (key == "TEMP_CLR")  return JAWS::settings.tempColor;
+        if (key == "TEMP_CLR")  return JAWS::settings.chartColors.temp;
+        if (key == "AVG_CLR")  return JAWS::settings.chartColors.avg;
         if (key == "USE_METRIC")  return JAWS::settings.useMetric ? "true" : "false";
         return "";
       };
@@ -161,6 +163,8 @@ namespace JAWSWebUI {
       JAWS::settings.blynkAPIKey = WebUI::arg("blynkAPIKey");
       JAWS::settings.tempCorrection = WebUI::arg("tempCorrection").toFloat();
       JAWS::settings.humiCorrection = WebUI::arg("humiCorrection").toFloat();
+      JAWS::settings.chartColors.temp = WebUI::arg("tempColor");
+      JAWS::settings.chartColors.avg = WebUI::arg("avgColor");
       JAWS::settings.write();
 
       // The description MAY have changed. Update the title just in case
