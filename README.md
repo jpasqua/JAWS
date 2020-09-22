@@ -261,9 +261,9 @@ Blynk QR Code:<br><img src="doc/images/BlynkQRCode.jpg" width="250" /></img><br>
 
 You can always access the current JAWS readings via the Web UI. This is the same UI you used to configure JAWS. Just go to the home page and you will see current readings. You'll also find an item in the hamburger menu that allows you to force JAWS to take a new reading.
 
-Additionally there is a chart page that produces a chart of temperature over time. This is the same sort of graph that is displayed on the Graph screen in the GUI (if you have that enabled). The chart shows the temperature over time. It currently stores 128 readings, so if you are taking readings every 10 minutes, then this is roughly 21 hours of data. the chart also displays a moving average of the temperature that will give you a smoothed view of the data. You can turn off either of these lines by clicking the corresponding label in the legend.
+Additionally there is a chart page that produces a chart of temperature over time. This is the same sort of graph that is displayed on the Graph screen in the GUI (if you have that enabled). The chart shows the temperature over time. It currently stores 128 readings, so if you are taking readings every 10 minutes, then this is roughly 21 hours of data. The chart also displays a moving average of the temperature that will give you a smoothed view of the data. You can control the level of smoothing using the slider below the chart.
 
-An example of the chart page is given below. Click the image to see a larger version.
+If you hover your mouse over a point on either line (temperature or moving average), you'll see a popup with the timestamp and value). You can also turn on/off either of the lines by clicking the corresponding label in the legend. An example of the chart page is given below. Click the image to see a larger version.
 
 <a href="doc/images/ChartPage.png"><img src="doc/images/ChartPage.png" width="512" /></img></a>
 
