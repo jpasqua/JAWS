@@ -21,6 +21,7 @@
 //                                  Local Includes
 #include "JAWS.h"
 #include "JAWSWebUI.h"
+#include "src/gui/GUI.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
@@ -33,10 +34,15 @@ namespace JAWSWebUI {
   // ----- BEGIN: JAWSWebUI::Internal
   namespace Internal {
     String Actions =
+      "<a class='w3-bar-item w3-button' href='/ChartPage'>"
+      "<i class='fa fa-bar-chart'></i> Charts</a>"
       "<a class='w3-bar-item w3-button' href='/displayJAWSConfig'>"
       "<i class='fa fa-cog'></i> Configure JAWS</a>"
       "<a class='w3-bar-item w3-button' href='/takeReadings'>"
       "<i class='fa fa-thermometer-three-quarters'></i> Take readings</a>";
+    String DEV_ACTION =
+      "<a class='w3-bar-item w3-button' href='/dev'>"
+      "<i class='fa fa-gears'></i> Dev Settings</a>";
   }
   // ----- END: JAWSWebUI::Internal
 
@@ -57,15 +63,19 @@ namespace JAWSWebUI {
         if (key == "GMAPS_KEY") return WebThing::settings.googleMapsKey;
         if (key == "LAT")  return WebThing::settings.latAsString();
         if (key == "LNG")  return WebThing::settings.lngAsString();
-        if (key == "TEMP") return (String(JAWS::outputTemp(JAWS::bme.measuredTemp), 1) + JAWS::tempUnits());
-        if (key == "HUMI") return (String(JAWS::bme.measuredHumi, 1) + "%");
-        if (key == "BARO") return (String(JAWS::outputBaro(JAWS::bme.measuredBaro), 1) + JAWS::baroUnits());
-        if (key == "RELP") return (String(JAWS::outputBaro(JAWS::bme.relPressure), 1) + JAWS::baroUnits());
-        if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::bme.heatIndex), 1) + JAWS::tempUnits());
-        if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::bme.dewPointTemp), 1) + JAWS::tempUnits());
-        if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::bme.dewPointSpread), 1) + JAWS::tempUnits());
-        if (key == "VLTG") return (String(WebThing::measureVoltage(), 2) + "V");
-        if (key == "TMST") return String(JAWS::bmeTimestamp());
+        if (key == "TEMP") return (String(JAWS::outputTemp(JAWS::readings.temp), 1) + JAWS::tempUnits());
+        if (key == "HUMI") return (String(JAWS::readings.humidity, 1) + "%");
+        if (key == "BARO") return (String(JAWS::outputBaro(JAWS::readings.pressure), 1) + JAWS::baroUnits());
+        if (key == "RELP") return (String(JAWS::outputBaro(JAWS::readings.relPressure), 1) + JAWS::baroUnits());
+        if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::readings.heatIndex), 1) + JAWS::tempUnits());
+        if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::readings.dewPointTemp), 1) + JAWS::tempUnits());
+        if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::readings.dewPointSpread), 1) + JAWS::tempUnits());
+        if (key == "VLTG") {
+          float voltage = WebThing::measureVoltage();
+          if (voltage == -1) return "N/A";
+          return (String(voltage, 2) + "V");
+        }
+        if (key == "TMST") return String(JAWS::timeOfLastReading());
         return "";
       };
 
@@ -89,6 +99,8 @@ namespace JAWSWebUI {
         if (key == "BLYNK_KEY")  return JAWS::settings.blynkAPIKey;
         if (key == "TEMP_CORRECT") return String(JAWS::settings.tempCorrection);
         if (key == "HUMI_CORRECT") return String(JAWS::settings.humiCorrection);
+        if (key == "TEMP_CLR")  return JAWS::settings.chartColors.temp;
+        if (key == "AVG_CLR")  return JAWS::settings.chartColors.avg;
         return "";
       };
 
@@ -96,6 +108,23 @@ namespace JAWSWebUI {
       templateHandler->send("/ConfigForm.html", mapper);
       WebUI::finishPage();
     }
+
+    void displayChartPage() {
+      Log.trace("Web Request: Display Chart Page");
+      if (!WebUI::authenticationOK()) { return; }
+
+      auto mapper =[](String &key) -> String {
+        if (key == "TEMP_CLR")  return JAWS::settings.chartColors.temp;
+        if (key == "AVG_CLR")  return JAWS::settings.chartColors.avg;
+        if (key == "USE_METRIC")  return JAWS::settings.useMetric ? "true" : "false";
+        return "";
+      };
+
+      WebUI::startPage();
+      templateHandler->send("/ChartPage.html", mapper);
+      WebUI::finishPage();
+    }
+
   }   // ----- END: JAWSWebUI::Pages
 
 
@@ -126,17 +155,23 @@ namespace JAWSWebUI {
     void updateJAWSConfig() {
       if (!WebUI::authenticationOK()) { return; }
       Log.trace("JAWSWebUI: Handle Update Config");
+      float oldTempCorrection = JAWS::settings.tempCorrection;
+      float oldHumiCorrection = JAWS::settings.humiCorrection;
 
       JAWS::settings.description = WebUI::arg("description");
       JAWS::settings.useMetric = WebUI::hasArg("useMetric");
       JAWS::settings.blynkAPIKey = WebUI::arg("blynkAPIKey");
       JAWS::settings.tempCorrection = WebUI::arg("tempCorrection").toFloat();
       JAWS::settings.humiCorrection = WebUI::arg("humiCorrection").toFloat();
+      JAWS::settings.chartColors.temp = WebUI::arg("tempColor");
+      JAWS::settings.chartColors.avg = WebUI::arg("avgColor");
       JAWS::settings.write();
 
       // The description MAY have changed. Update the title just in case
       WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
-
+      if (oldTempCorrection != JAWS::settings.tempCorrection || oldHumiCorrection != JAWS::settings.humiCorrection) {
+        JAWS::updateCorrections();
+      }
       WebUI::redirectHome();
     }
 
@@ -153,27 +188,124 @@ namespace JAWSWebUI {
 
       String json = "{";
       json += "\"temperature\": ";
-      json += JAWS::bme.measuredTemp;
+      json += JAWS::readings.temp;
       json += ", ";
       json += "\"humidity\": ";
-      json += JAWS::bme.measuredHumi;
+      json += JAWS::readings.humidity;
       json += "}";
       server->sendHeader("Cache-Control", "private, no-store");
       server->send(200, "application/json", json);
     }
+
+    void getHistory() {
+      auto provider = [](Stream& s) -> void {
+        JAWS::emitHistoryAsJSON(s);
+      };
+
+      WebUI::sendArbitraryContent("application/json", -1, provider);
+    }
+
   }   // ----- END: JAWSWebUI::Endpoints
+
+
+  namespace Dev {
+    void dumpArgs() {
+      ESP8266WebServer* server = WebUI::getUnderlyingServer();
+      int nArgs = server->args();
+      Log.verbose("“Number of args received: %d", nArgs);
+      for (int i = 0; i < nArgs; i++) {
+        Log.verbose("arg(%d): %s = %s", i, server->argName(i).c_str(), server->arg(i).c_str());
+      } 
+    }
+
+    void updateSettings() {
+      if (!WebUI::authenticationOK()) { return; }
+      Log.trace("Web Request: /dev/updateSettings");
+
+      JAWS::settings.showDevMenu = WebUI::hasArg("showDevMenu");
+      JAWS::settings.write();
+
+      WebUI::redirectHome();
+    }
+
+    void yieldScreenShot() {
+      Log.trace(F("Web Request: /dev/screenShot"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      WebUI::sendArbitraryContent("image/bmp", GUI::getSizeOfScreenShotAsBMP(), GUI::streamScreenShotAsBMP);
+    }
+
+    void displayDevPage() {
+      Log.trace(F("Web Request: /dev/displayDevPage"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      auto mapper =[](String &key) -> String {
+        if (key == "SHOW_DEV_MENU") return checkedOrNot[JAWS::settings.showDevMenu];
+        return "";
+      };
+
+      WebUI::startPage();
+      templateHandler->send("/DevPage.html", mapper);
+      WebUI::finishPage();
+    }
+
+    void reboot() {
+      if (!WebUI::authenticationOK()) { return; }
+      ESP.restart();
+    }
+
+    void yieldSettings() {
+      Log.trace(F("Web Request: /dev/settings"));
+      if (!WebUI::authenticationOK()) { return; }
+
+      DynamicJsonDocument *doc = (WebUI::hasArg("wt")) ? WebThing::settings.asJSON() :
+                                                         JAWS::settings.asJSON();
+      WebUI::sendJSONContent(doc);
+      doc->clear();
+      delete doc;
+    }
+
+    void forceScreen() {
+      Log.trace(F("Web Request: /dev/forceScreen"));
+      if (!WebUI::authenticationOK()) { return; }
+      String screen = WebUI::arg(F("screen"));
+      if (screen.isEmpty()) return;
+
+      if (screen == F("wifi")) GUI::showScreen(GUI::ScreenName::WiFi);
+      else if (screen == F("splash")) GUI::showScreen(GUI::ScreenName::Splash);
+      else if (screen == F("config")) {
+        JAWS::SSID = "jaws60750b";
+        GUI::showScreen(GUI::ScreenName::Config);
+      }
+      WebUI::redirectHome();
+    }
+  }   // ----- END: JAWSWebUI::Dev
 
 
   void init() {
     WebUI::setTitle(JAWS::settings.description+" ("+WebThing::settings.hostname+")");
-    WebUI::addMenuItems(Internal::Actions);
 
-    WebUI::registerHandler("/", Pages::displayHomePage);
-    WebUI::registerHandler("/displayJAWSConfig", Pages::displayJAWSConfig);
+    String actions = Internal::Actions;
+    if (JAWS::settings.showDevMenu) {
+      actions += Internal::DEV_ACTION;
+    }
+    WebUI::addMenuItems(actions);
 
-    WebUI::registerHandler("/updateJAWSConfig", Endpoints::updateJAWSConfig);
-    WebUI::registerHandler("/takeReadings", Endpoints::updateReadings);
-    WebUI::registerHandler("/weather", Endpoints::weather);
+    WebUI::registerHandler("/",                   Pages::displayHomePage);
+    WebUI::registerHandler("/ChartPage",          Pages::displayChartPage);
+    WebUI::registerHandler("/displayJAWSConfig",  Pages::displayJAWSConfig);
+
+    WebUI::registerHandler("/updateJAWSConfig",   Endpoints::updateJAWSConfig);
+    WebUI::registerHandler("/takeReadings",       Endpoints::updateReadings);
+    WebUI::registerHandler("/weather",            Endpoints::weather);
+    WebUI::registerHandler("/getHistory",         Endpoints::getHistory);
+
+    WebUI::registerHandler("/dev",                Dev::displayDevPage);
+    WebUI::registerHandler("/dev/reboot",         Dev::reboot);
+    WebUI::registerHandler("/dev/settings",       Dev::yieldSettings);
+    WebUI::registerHandler("/dev/screenShot",     Dev::yieldScreenShot);
+    WebUI::registerHandler("/dev/forceScreen",    Dev::forceScreen);
+    WebUI::registerHandler("/dev/updateSettings", Dev::updateSettings);
 
     templateHandler = WebUI::getTemplateHandler();
   }

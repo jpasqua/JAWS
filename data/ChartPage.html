@@ -1,0 +1,95 @@
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <style>
+    canvas { -moz-user-select: none; -webkit-user-select: none; -ms-user-select: none; }
+    .slider {
+      -webkit-appearance: none; -webkit-transition: .2s;
+      width: 100\%; height: 15px;
+      border-radius: 5px;    outline: none;
+      opacity: 0.7; transition: opacity .2s;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 25px; height: 25px; border-radius: 50\%; 
+      background: #4CAF50; cursor: pointer;
+    }
+  </style>
+  <div style="width:75\%;"> <canvas id="tempCanvas"></canvas> </div>
+  <div class='w3-quarter' style="text-align: right"> Smoothing:&nbsp;</div>
+  <div class='w3-quarter w3-margin-right'>
+    <input type="range" min="1" max="20" class='slider w3-theme-l4' id='slider' onchange='updateChart(this.value)'>
+  </div>
+
+  <script>
+    const Color_Temp = '%TEMP_CLR%'
+    const Color_Avg = '%AVG_CLR%'
+    var smoothing = 10;
+    var tempChart
+    document.getElementById('slider').value = smoothing;
+
+    function createOptions(theTitle) {
+      return {
+        responsive: true, title: { display: true, text: theTitle, fontSize:16 },
+        chartArea: { backgroundColor: 'rgba(255, 255, 255, 0.4)' },
+        scales: {
+          xAxes: [{ display: true, scaleLabel: { display: true, labelString: 'Date' }, type: 'time' }],
+          yAxes: [{ display: true, scaleLabel: { display: true, labelString: 'Value' } }]
+        }
+      }
+    }
+
+    function createDatasets() {
+      return {
+          datasets: [
+            { label: 'Temperature', borderColor: Color_Temp, fill: false, lineTension: 0, data: [] },
+            { label: 'Moving Average', borderColor: Color_Avg, fill: false, lineTension: 0, data: [] } ]
+          }
+    }
+
+    var tempConfig = { type: 'line', data: createDatasets(), options: createOptions("Historical Temperature Data") };
+    var isMetric = %USE_METRIC%
+
+    function updateChart(val) {
+      smoothing = val;
+      resmooth(tempConfig);
+      tempChart.update();
+    }
+
+    function prepData(theConfig, root) {
+      theConfig.data.datasets[0].data = [];
+      for (var i = 0; i < root.history.length; i++) {
+        var timestamp = root.history[i].ts*1000
+        var temperature = root.history[i].t;
+        if (!isMetric) {
+          temperature = Math.round((temperature * 9/5 + 32)*10)/10
+        }
+        theConfig.data.datasets[0].data.push({x: timestamp, y: temperature})
+      }
+    }  
+
+    function resmooth(theConfig) {
+      theConfig.data.datasets[1].data = [];
+      var nSamples = theConfig.data.datasets[0].data.length;
+      var sum = 0;
+      for (var i = 0; i < nSamples; i++) {
+        var timestamp = theConfig.data.datasets[0].data[i].x
+        var temperature = theConfig.data.datasets[0].data[i].y;
+        sum += temperature
+        var mean
+        if (i >= smoothing) { sum -= theConfig.data.datasets[0].data[i-smoothing].y; mean = sum/smoothing; }
+        else { mean = sum/(i+1); }
+        theConfig.data.datasets[1].data.push({x: timestamp, y: Math.round(mean*10)/10})
+      }
+    }
+
+    $.when(
+      $.getJSON(
+        "/getHistory",
+        function(root) { prepData(tempConfig, root); resmooth(tempConfig) })).then(function() {
+          var ctx = document.getElementById('tempCanvas').getContext('2d');
+          tempChart = new Chart(ctx, tempConfig);
+        }); 
+
+  </script>

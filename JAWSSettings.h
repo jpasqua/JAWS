@@ -30,6 +30,11 @@ public:
   String  blynkAPIKey = "";                 // Your API Key from Blynk
   float   tempCorrection = 0.0;             // Correction to the temp reading - always in Celsius
   float   humiCorrection = 0.0;             // Correction to the humidty sensor reading
+  bool    showDevMenu = false;
+  struct {
+    String  temp;                           // Color of the temperature line in charts
+    String  avg;                            // Color of the moving average line in charts
+  } chartColors;
 
 private:
   // ----- Constants -----

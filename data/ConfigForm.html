@@ -1,9 +1,28 @@
 <form class='w3-container' action='/updateJAWSConfig' method='get'>
   <h2>JAWS Settings:</h2>
-  <p><label>Description</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='description' value='%DESC%' maxlength='60'></p>
-  <p><input name='useMetric' class='w3-check w3-margin-top' type='checkbox' %USE_METRIC%> Use Metric (Celsius)</p>
-  <p><label>Blynk API Key</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='blynkAPIKey' value='%BLYNK_KEY%' maxlength='60'></p>
-  <p><label>Temperature Correction</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='tempCorrection' value='%TEMP_CORRECT%' maxlength='12'></p>
-  <p><label>Humidity Correction</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='humiCorrection' value='%HUMI_CORRECT%' maxlength='12'></p>
+  <div class='w3-row'>
+    <label>Description</label>
+    <input class='w3-input w3-border' type='text' name='description' value='%DESC%' maxlength='60'>
+  </div>
+  <div class='w3-row w3-margin-top'>
+    <input name='useMetric' class='w3-check' type='checkbox' %USE_METRIC%>Use Metric (Celsius)
+  </div>
+  <div class='w3-row w3-margin-top'>
+    <label>Blynk API Key</label>
+    <input class='w3-input w3-border' type='text' name='blynkAPIKey' value='%BLYNK_KEY%' maxlength='60'>
+  </div>
+  <div class='w3-row w3-margin-top'>
+    <label>Temperature Correction</label>
+    <input class='w3-input w3-border' type='text' name='tempCorrection' value='%TEMP_CORRECT%' maxlength='12'>
+  </div>
+  <div class='w3-row'>
+    <label>Humidity Correction</label>
+    <input class='w3-input w3-border' type='text' name='humiCorrection' value='%HUMI_CORRECT%' maxlength='12'>
+  </div>
+  <br><strong>Chart Colors</strong>
+  <table>
+    <tr><td>Temperature</td><td></label><input  type="color" name="tempColor" value="%TEMP_CLR%"></td></tr>
+    <tr><td>Moving Average</td><td></label><input  type="color" name="avgColor" value="%AVG_CLR%"></td></tr>
+  </table>
   <button class='w3-button w3-block w3-round-large w3-grey w3-section w3-padding' type='submit'>Save</button>
 </form>
