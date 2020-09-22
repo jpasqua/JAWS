@@ -24,6 +24,7 @@ The following third party libraries are used within this project:
 * [Arduino-Log](https://github.com/thijse/Arduino-Log)
 * [ArduinoJson (v6)](https://github.com/bblanchon/ArduinoJson)
 * [BlynkSimpleEsp8266](https://github.com/blynkkk/blynk-library)
+* [CircularBuffer](https://github.com/rlogiacco/CircularBuffer)
 * [ESPTemplateProcessor](https://github.com/jpasqua/ESPTemplateProcessor)
 * [TimeLib](https://github.com/PaulStoffregen/Time.git)
 * [WebThing](https://github.com/jpasqua/WebThing)
@@ -102,11 +103,10 @@ Notes:
 * The BME sensor and the display each have a unique address. The typical addresses for these devices is already set in `HWConfig.h`, but you can change them. When you physically connect the hardware, make sure that the BME sensor and the display are both connected to the same pins.
 
 
-
 <a name="full-hw"></a>
 #### Full Weather Station
 
-<img src="doc/images/FWS.jpg">
+![](doc/images/FWS.jpg)
 
 You can build a full solar-powered weather station using the list of required hardware and assembly instructions from the [instructables site](https://www.instructables.com/id/Solar-Powered-WiFi-Weather-Station-V20/). There is even a [PCB](https://www.pcbway.com/project/gifts_detail/Solar_Powered_WiFi_Weather_Station_V2_0.html) available which makes for a very neat result.
 
@@ -114,7 +114,7 @@ In a few minutes you'll be reading about [low power mode](#ulpm) and it will men
 
 <a name="simple_module"></a>
 #### Simple Weather Module
-<img src="doc/images/Module.jpg">
+![](doc/images/Module.jpg)
 
 If you want to have a simple weather sensor that does not have solar charging, you can use a standard ESP8266 with a BME280 sensor. For example, you may want a module in the garage, a shed, the attic, etc. For these applications (typically indoors or otherwise protected), you may also have a display to show the readings locally. You can even use an integrated module like [this one](https://usa.banggood.com/Nodemcu-Wifi-And-NodeMCU-ESP8266-0_96-Inch-OLED-Module-Development-Board-p-1154759.html?cur_warehouse=CN) that has the display pre-integrated.
 
@@ -259,7 +259,14 @@ Blynk QR Code:<br><img src="doc/images/BlynkQRCode.jpg" width="250" /></img><br>
 
 ### Accessing JAWS using the Web UI
 
-You can always access the current JAWS readings via the Web UI. This is the same UI you used to configure JAWS. Just go to the home page and you will see current readings. You'll also find an item in the hamburger menu that allows you to force a reading.
+You can always access the current JAWS readings via the Web UI. This is the same UI you used to configure JAWS. Just go to the home page and you will see current readings. You'll also find an item in the hamburger menu that allows you to force JAWS to take a new reading.
+
+Additionally there is a chart page that produces a chart of temperature over time. This is the same sort of graph that is displayed on the Graph screen in the GUI (if you have that enabled). The chart shows the temperature over time. It currently stores 128 readings, so if you are taking readings every 10 minutes, then this is roughly 21 hours of data. the chart also displays a moving average of the temperature that will give you a smoothed view of the data. You can turn off either of these lines by clicking the corresponding label in the legend.
+
+An example of the chart page is given below. Click the image to see a larger version.
+
+<a href="doc/images/ChartPage.png"><img src="doc/images/ChartPage.png" width="512" /></img></a>
+
 
 ## Using the GUI
 
