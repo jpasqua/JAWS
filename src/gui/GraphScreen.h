@@ -31,10 +31,19 @@ public:
     float rangeLo = graphMin - rangePadding;
 
     oled->clear();
+    float sum = 0;
+    float mean = 0;
     for (int i = 0; i < nSamples; i++) {
-      float cur = JAWS::outputTemp(JAWS::history[i].temp);
-      
-      float percentIntoRange = (cur - rangeLo)/displayedRange;
+      float cur = JAWS::history[i].temp;
+
+      sum += cur;
+      if (i >= smoothing) { sum -= JAWS::history[i-smoothing].temp; mean = sum/smoothing; }
+      else { mean = sum/(i+1); }
+
+      mean = JAWS::outputTemp(mean);
+      // cur = JAWS::outputTemp(cur);
+      // float percentIntoRange = (cur - rangeLo)/displayedRange;
+      float percentIntoRange = (mean - rangeLo)/displayedRange;
       percentIntoRange = 1.0 - percentIntoRange; // Hi values are at the top which are lower pixel values
       oled->setPixel(i, (int)(MaxYForGraph*percentIntoRange));
     }
@@ -63,4 +72,5 @@ public:
 
 private:
   static const uint8_t MaxYForGraph = 48;  // Reserve space for the legend
+  uint8_t smoothing = 10;
 };
