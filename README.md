@@ -28,7 +28,7 @@ The following third party libraries are used within this project:
 * [CircularBuffer](https://github.com/rlogiacco/CircularBuffer)
 * [ESPTemplateProcessor](https://github.com/jpasqua/ESPTemplateProcessor)
 * [TimeLib](https://github.com/PaulStoffregen/Time.git)
-* [WebThing](https://github.com/jpasqua/WebThing)
+* [WebThing](https://github.com/jpasqua/WebThing) [version 0.2.0 or later]
 * **Optional**
   * Only required for GUI
       * [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306)
