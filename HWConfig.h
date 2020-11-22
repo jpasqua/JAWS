@@ -15,11 +15,25 @@
 // ----- END: Constants used in the rest of the file
 
 // Pick a configuration. Use Config_Custom to define your own
-#define HWConfig Config_EmbeddedOLED
+#define HWConfig Config_Custom
 
 // If there is an attached display for a GUI, set to 1, otherwise 0
 #define HAS_GUI   1
 
+
+//
+// Sensors:
+// * There must be a single primary sensor which is either a BME280 or a DHT22
+//   o When a BME280 is in use you must:
+//     - Give values for SDA_PIN, SCL_PIN, and BME_I2C_ADDR
+//     - Set DHT22_PIN to -1
+//   o When a DHT22 is in use you must:
+//     - Give DHT22_PIN a value
+//     - Give values for SDA_PIN, SCL_PIN iff a display is in use
+// * There may optionally also be a DS18B20 sensor
+//   - It provides more accurate temperature readings and will override
+//     the temperature reading from the primary sensor
+//
 
 #if (HWConfig == Config_D1Mini)
   /*------------------------------------------------------------------------------
@@ -34,6 +48,7 @@
   // ----- Sensors
   static const int BME_I2C_ADDR = 0x76;
   static const int DS18B20_PIN = -1;      // -1 to indicate no DS18B20 (which is typical)
+  static const int DHT22_PIN   = -1;      // -1 to indicate no DHT22 (must be a BME280)
 
   #if (HAS_GUI == 1)
     // ----- Display Type
@@ -57,6 +72,7 @@
   // ----- Sensors
   static const int BME_I2C_ADDR = 0x76;
   static const int DS18B20_PIN = -1;
+  static const int DHT22_PIN   = -1;      // -1 to indicate no DHT22 (must be a BME280)
 
   #if (HAS_GUI == 1)
     // ----- Display Type
@@ -74,17 +90,18 @@
    *
    *----------------------------------------------------------------------------*/
   // ----- I2C Settings
-  static const int SDA_PIN = D1;  // Substitute the correct Pin for your config
-  static const int SCL_PIN = D2;  // Substitute the correct Pin for your config
+  static const int SDA_PIN = D2;  // Substitute the correct Pin for your config
+  static const int SCL_PIN = D5;  // Substitute the correct Pin for your config
 
   // ----- Sensors
   static const int BME_I2C_ADDR = 0x76;
   static const int DS18B20_PIN = -1;  // -1 -> No DS18B20, which is typical
+  static const int DHT22_PIN   = D3;  // -1 to indicate no DHT22 (must be a BME280)
 
   #if (HAS_GUI == 1)
     // ----- Display Type
-    #define DISPLAY_DRIVER   SSD1306
     // #define DISPLAY_DRIVER   SSD1306
+    #define DISPLAY_DRIVER   SH1106
     static const int DISPLAY_I2C_ADDRESS = 0x3c;
     // ----- Button
     static const int BUTTON_PIN = D3;
