@@ -24,22 +24,24 @@
 #include "JAWSBlynk.h"
 #include "src/gui/GUI.h"
 #include "src/clients/BMESensor.h"
+#include "src/clients/DHT22Sensor.h"
 #include "src/clients/DS18B20.h"
 //--------------- End:    Includes ---------------------------------------------
 
 
 namespace JAWS {
-  const String Version = "0.3.0";
+  const String Version = "0.3.1";
 
   /*------------------------------------------------------------------------------
    *
    * Global State
    *
    *----------------------------------------------------------------------------*/
-  BMESensor bme;
-  DS18B20*  tempSensor;
-  Readings  readings;
-  JAWSSettings settings;
+  BMESensor     bme;
+  DS18B20*      tempSensor;
+  DHT22Sensor*  dht22;
+  Readings      readings;
+  JAWSSettings  settings;
   CircularBuffer<TempReading, MaxSamples> history;
   String SSID = "";
 
@@ -62,11 +64,16 @@ namespace JAWS {
     }
 
     void prepSensors() {
-      bme.setAttributes(                // Set up sensor attributes and initialize
-        settings.tempCorrection,
-        settings.humiCorrection,
-        WebThing::settings.elevation);
-      bme.begin(BME_I2C_ADDR);  
+      if (DHT22_PIN == -1) {
+        // We must be using a BME Sensor
+        bme.setAttributes(
+          settings.tempCorrection, settings.humiCorrection, WebThing::settings.elevation);
+        bme.begin(BME_I2C_ADDR);
+        dht22 = NULL; // We can only have one primary sensor!
+      } else {
+        dht22 = new DHT22Sensor(
+          DHT22_PIN, settings.tempCorrection, settings.humiCorrection, WebThing::settings.elevation);
+      }
       if (DS18B20_PIN != -1) {  // Optional temperature sensor
         tempSensor = new DS18B20();
         tempSensor->begin(DS18B20_PIN, settings.tempCorrection);
@@ -176,21 +183,32 @@ namespace JAWS {
   }
 
   void updateCorrections() {
+    if (dht22 != NULL) {
+      dht22->setAttributes(             // Set up sensor attributes and initialize
+      settings.tempCorrection,
+      settings.humiCorrection,
+      WebThing::settings.elevation);
+    } else {
       bme.setAttributes(                // Set up sensor attributes and initialize
         settings.tempCorrection,
         settings.humiCorrection,
         WebThing::settings.elevation);
-      if (tempSensor) { tempSensor->setAttributes(settings.tempCorrection); }
     }
+    if (tempSensor) { tempSensor->setAttributes(settings.tempCorrection); }
+  }
 
   void processReadings() {
-    bme.takeReadings(readings);
+    if (dht22 != NULL) {
+      dht22->takeReadings(readings);
+    } else {
+      bme.takeReadings(readings);
+    }
     if (tempSensor != NULL) {
       float temp = tempSensor->getTempC();
       if (temp == DS18B20::ReadingError) {
         Log.warning("Error reading from DS18B20");
       } else {
-        Log.trace("Overriding reading from BME (%F) with DS (%F)", readings.temp, temp);
+        Log.trace("Overriding reading from Primary Sensor (%F) with DS (%F)", readings.temp, temp);
         readings.temp = temp;
       }
     }

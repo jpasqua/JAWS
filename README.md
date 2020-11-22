@@ -20,22 +20,23 @@ Some of this configuration information is specific to *JAWS* while other informa
 
 The following third party libraries are used within this project:
 
-* [Adafruit_BME280](https://github.com/adafruit/Adafruit_BME280_Library)
-* [Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor) 
+* [Adafruit_BME280](https://github.com/adafruit/Adafruit_BME280_Library)†
+* [Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor)
 * [Arduino-Log](https://github.com/thijse/Arduino-Log)
 * [ArduinoJson (v6)](https://github.com/bblanchon/ArduinoJson)
 * [BlynkSimpleEsp8266](https://github.com/blynkkk/blynk-library)
 * [CircularBuffer](https://github.com/rlogiacco/CircularBuffer)
+* [DHT](https://github.com/adafruit/DHT-sensor-library)†
 * [ESPTemplateProcessor](https://github.com/jpasqua/ESPTemplateProcessor)
 * [TimeLib](https://github.com/PaulStoffregen/Time.git)
 * [WebThing](https://github.com/jpasqua/WebThing) [version 0.2.0 or later]
-* **Optional**
-  * Only required for GUI
-      * [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306)
-      * [IoAbstraction](https://github.com/davetcc/IoAbstraction)
-  * Only required for DS18B20 sensor (additional temperature sensor)
-      * [Arduino Temperature Control](https://github.com/milesburton/Arduino-Temperature-Control-Library) 
-      * [OneWire](https://github.com/PaulStoffregen/OneWire)
+* [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306)††
+* [Arduino Temperature Control](https://github.com/milesburton/Arduino-Temperature-Control-Library)†††
+* [OneWire](https://github.com/PaulStoffregen/OneWire)†††
+
+† The primary sensor in *JAWS* may be a BME280 or a DHT22. Depending on which you choose, you will only need the library associated with it.  
+†† This library is only needed if you have an attached display showing a GUI.  
+††† The primary sensor can be augmented with a more accurate temperature sensor. These libraries are only needed if you are doing so.
 
 ### Services
 The following services play a role in providing parts of the functionality:
@@ -135,9 +136,15 @@ Interacting with the device requires a single momentary push button. You must te
 * **Important**: There is a setting which tells *JAWS* whether a local display is attached. It is `false` by default which means that even if you connect a display, it won't show anything until you change the setting. The easiest way to do this is to modify the default value of `hasGUI` from `false` to `true` in `JAWSSettings.h`.
 * `HWConfig.h` is not checked into github - you must create it based on the provided template. Only the template (`HWConfigTemplate.h`) is checked in.
 
-#### Additional Sensors
+#### Sensors
 
-*JAWS* normally takes all of its readings (temperature, humidity, and barometric pressure) from a single BME280 sensor. These sensors have taken some heat (no pun intended) for yielding inaccurate / inconsistent temperature readings. You may wish to use a sensor designed for temperature such as the [DS18B20](https://www.adafruit.com/product/374). If you add one of these sensors, you'll need to enable it in `HWConfig.h` file. You'll see a line that designates which pin the DS18B20 sensor is connected to. If the pin is set to `-1`, then *JAWS* assumes no additional sensor is attached. If it is not `-1` then *JAWS* will access the DS18B20 using that pin. It will use the temperature value from the DS18B20 in place of the reading from the BME280.
+*JAWS* has a primary sensor and an optional extra sensor. You specify which primary sensor you are using and whether you have an extra sensor in `HWConfig.h`.
+
+*JAWS* normally takes all of its readings (temperature, humidity, and barometric pressure) from a single BME280 sensor. The PCB mentioned above accommodates a BME280. However, some people may prefer (or happen to have) a DHT22 sensor. *JAWS* allow either to be used as its primary sensor, though the DHT22 does not support barometer readings. Therefore when using a DHT22 pressure and relative pressure readings will not be shown in the Web UI, sent to Blynk, or displayed in the (optional) GUI.
+
+You choose your primary sensor in `HWConfig.h`. If you wish to use the BME280, set `DHT22_PIN` to `-1`. To use the DHT22 instead fo the BME280, set `DHT22_PIN` to the actual pin that you are using.
+
+The BME280 sensors have taken some heat (no pun intended) for yielding inaccurate / inconsistent temperature readings. You may wish to use a sensor designed for temperature such as the [DS18B20](https://www.adafruit.com/product/374). If you add one of these sensors, you'll need to enable it in `HWConfig.h` file. You'll see a line that designates which pin the DS18B20 sensor is connected to. If the pin is set to `-1`, then *JAWS* assumes no additional sensor is attached. If it is not `-1` then *JAWS* will access the DS18B20 using that pin. It will use the temperature value from the DS18B20 in place of the reading from the BME280 (or the DHT22 if you're using that in place of the BME280).
 
 ### 3D Model
 The original housing for this project as well as some others are available on thingiverse. Here is a sampling:
