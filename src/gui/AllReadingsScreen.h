@@ -24,9 +24,11 @@ public:
     oled->drawString(0, 5, GUIPackage::fmtBuf);
     snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Humi: %.0f%%", JAWS::readings.humidity);
     oled->drawString(0, 24, GUIPackage::fmtBuf);
-    snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Baro: %.1f%s",
-        JAWS::outputBaro(JAWS::readings.pressure), JAWS::baroUnits().c_str());
-    oled->drawString(0, 43, GUIPackage::fmtBuf);
+    if (JAWS::readings.pressure >= 0 ) { // A value < 0 implies no data is available
+      snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Baro: %.1f%s",
+          JAWS::outputBaro(JAWS::readings.pressure), JAWS::baroUnits().c_str());
+      oled->drawString(0, 43, GUIPackage::fmtBuf);      
+    }
     oled->display();
 
     timeOfLastDisplay = millis();

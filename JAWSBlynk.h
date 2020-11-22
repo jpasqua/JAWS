@@ -44,8 +44,10 @@ namespace JAWSBlynk {
 
     Blynk.virtualWrite(BlynkTempPin,        JAWS::outputTemp(JAWS::readings.temp));
     Blynk.virtualWrite(BlynkHumidityPin,    JAWS::readings.humidity);
-    Blynk.virtualWrite(BlynkPressurePin,    JAWS::outputBaro(JAWS::readings.pressure));
-    Blynk.virtualWrite(BlynkRelPressurePin, JAWS::outputBaro(JAWS::readings.relPressure));
+    if (JAWS::readings.pressure >= 0) { // Some devices may not support barometric pressure
+      Blynk.virtualWrite(BlynkPressurePin,    JAWS::outputBaro(JAWS::readings.pressure));
+      Blynk.virtualWrite(BlynkRelPressurePin, JAWS::outputBaro(JAWS::readings.relPressure));
+    }
     Blynk.virtualWrite(BlynkDewPointPin,    JAWS::outputTemp(JAWS::readings.dewPointTemp));
     Blynk.virtualWrite(BlynkDewSpreadPin,   JAWS::tempSpread(JAWS::readings.dewPointSpread));
     Blynk.virtualWrite(BlynkHeatIndexPin,   JAWS::outputTemp(JAWS::readings.heatIndex));

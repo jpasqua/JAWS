@@ -2,6 +2,13 @@
  * GUI:
  *    Provide a local interface for weather readings
  *
+ * IMPORTANT NOTE:
+ * o There are two implementations of this interface: GUI.cpp and NoGUI.cpp
+ *   + If there is an attached display (see HAS_GUI in HWConfig) then GUI.cpp is used
+ *   + Otherwise NoGUI.cpp is used
+ * o Any new methods added to this interface MUST be implemented in both places. The
+ *   implementation in NoGUI.cpp is usually just a no-op
+ *
  */
 
 #ifndef GUI_h
@@ -26,7 +33,6 @@ namespace GUI {
   void showScreen(ScreenName which);
   void init(bool flipDisplay = false);
   void setOrientation(bool flip);
-
 
   void loop();
 

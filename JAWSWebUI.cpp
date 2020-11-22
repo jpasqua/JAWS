@@ -15,7 +15,6 @@
 
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
-#include <ESP8266WebServer.h>
 //                                  Third Party Libraries
 #include <ArduinoLog.h>
 //                                  Local Includes
@@ -65,8 +64,12 @@ namespace JAWSWebUI {
         if (key == "LNG")  return WebThing::settings.lngAsString();
         if (key == "TEMP") return (String(JAWS::outputTemp(JAWS::readings.temp), 1) + JAWS::tempUnits());
         if (key == "HUMI") return (String(JAWS::readings.humidity, 1) + "%");
-        if (key == "BARO") return (String(JAWS::outputBaro(JAWS::readings.pressure), 1) + JAWS::baroUnits());
-        if (key == "RELP") return (String(JAWS::outputBaro(JAWS::readings.relPressure), 1) + JAWS::baroUnits());
+        if (key == "BARO")
+          return (JAWS::readings.pressure < 0) ?
+            "No Data" : (String(JAWS::outputBaro(JAWS::readings.pressure), 1) + JAWS::baroUnits());
+        if (key == "RELP")
+          return (JAWS::readings.relPressure < 0) ?
+            "No Data" : (String(JAWS::outputBaro(JAWS::readings.relPressure), 1) + JAWS::baroUnits());
         if (key == "HTIN") return (String(JAWS::outputTemp(JAWS::readings.heatIndex), 1) + JAWS::tempUnits());
         if (key == "DWPT") return (String(JAWS::outputTemp(JAWS::readings.dewPointTemp), 1) + JAWS::tempUnits());
         if (key == "DPSP") return (String(JAWS::tempSpread(JAWS::readings.dewPointSpread), 1) + JAWS::tempUnits());
@@ -184,8 +187,6 @@ namespace JAWSWebUI {
     //    GET  /weather
     //
     void weather() {
-      ESP8266WebServer *server = WebUI::getUnderlyingServer();
-
       String json = "{";
       json += "\"temperature\": ";
       json += JAWS::readings.temp;
@@ -193,8 +194,7 @@ namespace JAWSWebUI {
       json += "\"humidity\": ";
       json += JAWS::readings.humidity;
       json += "}";
-      server->sendHeader("Cache-Control", "private, no-store");
-      server->send(200, "application/json", json);
+      WebUI::sendStringContent("application/json", json);
     }
 
     void getHistory() {
@@ -210,11 +210,10 @@ namespace JAWSWebUI {
 
   namespace Dev {
     void dumpArgs() {
-      ESP8266WebServer* server = WebUI::getUnderlyingServer();
-      int nArgs = server->args();
+      int nArgs = WebUI::args();
       Log.verbose("“Number of args received: %d", nArgs);
       for (int i = 0; i < nArgs; i++) {
-        Log.verbose("arg(%d): %s = %s", i, server->argName(i).c_str(), server->arg(i).c_str());
+        Log.verbose("arg(%d): %s = %s", i, WebUI::argName(i).c_str(), WebUI::arg(i).c_str());
       } 
     }
 
@@ -251,6 +250,7 @@ namespace JAWSWebUI {
 
     void reboot() {
       if (!WebUI::authenticationOK()) { return; }
+      WebUI::redirectHome();
       ESP.restart();
     }
 

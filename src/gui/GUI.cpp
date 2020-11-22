@@ -37,8 +37,8 @@ namespace GUIPackage {
   //
   // State
   //
-  OLEDDisplay* oled;            // The dipslay
-  char fmtBuf[FmtBufSize];
+  OLEDDisplay*  oled;            // The dipslay
+  char          fmtBuf[FmtBufSize];
 
   //
   // Exported Functions
@@ -65,10 +65,13 @@ namespace GUI {
   ButtonMgr* buttonMgr;
   Button*    modeButton;
 
+
   //
   // Exported Functions
   //
+
   void showScreen(ScreenName which) {
+    if (which == ScreenName::Baro && JAWS::readings.pressure < 0) { return; }
     screens[(curScreen = which)]->activate(); 
   }
 
@@ -76,6 +79,7 @@ namespace GUI {
     if (b->_state == 0) return;  // Only do something when the button is released
 
     uint8_t next = curScreen+1;
+    if (next == ScreenName::Baro && JAWS::readings.pressure < 0) next++;
     if (next > lastCycledScreen) next = firstCycledScreen;
     showScreen(static_cast<ScreenName>(next));    
   }
