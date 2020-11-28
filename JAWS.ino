@@ -11,10 +11,15 @@
 
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
-#include <ESP8266mDNS.h>
 //                                  Third Party Libraries
 #include <ArduinoLog.h>
-#include <BlynkSimpleEsp8266.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>          // Required to remove redefinitions in BlynkSimple
+  #include <BlynkSimpleEsp8266.h>
+#elif defined(ESP32)
+  #include <WiFi.h>                 // Required to remove redefinitions in BlynkSimple
+  #include <BlynkSimpleEsp32.h>
+#endif
 #include <TimeLib.h>
 #include <WebUI.h>
 //                                  Local Includes
@@ -54,7 +59,7 @@ namespace JAWS {
       // right values here.
       WebThing::settings.sleepOverridePin = 13;     // D7
       // WebThing::settings.hasVoltageSensing = true;
-      if (WebThing::settings.hostname.isEmpty()) WebThing::settings.hostname = ("jaws" + String(ESP.getChipId(), HEX));
+      WebThing::replaceEmptyHostname("jaws");
     }
 
     void flushBeforeSleep() { JAWSBlynk::disconnect(); }
