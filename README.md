@@ -91,7 +91,7 @@ The primary functional areas of *JAWS* are given below. You don't need to know t
 <a name="building-jaws"></a>
 ## Building JAWS
 
-*JAWS* has been built and tested with Arduino IDE 1.8.10 and ESP8266 cores 2.6.1 and 2.7.1. Newer versions are likely to work, but I haven't tried other specific combinations. If you have never built an Arduino project using an ESP8266, you'll need to [prepare your development environment](https://github.com/esp8266/Arduino#installing-with-boards-manager). *JAWS* also supports the ESP32, but has minimal testing to date.
+*JAWS* has been built and tested with Arduino IDE 1.8.10 and ESP8266 cores 2.6.1 and 2.7.1. Newer versions are likely to work, but I haven't tried other specific combinations. If you have never built an Arduino project using an ESP8266, you'll need to [prepare your development environment](https://github.com/esp8266/Arduino#installing-with-boards-manager). *JAWS* also supports the ESP32, but has minimal testing to date. It requires v1.0.5rc2 or later of the ESP32 Arduino core.
 
 ### Hardware
 
