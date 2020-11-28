@@ -1,8 +1,7 @@
 //--------------- Begin:  Includes ---------------------------------------------
 //                                  Core Libraries
-#include <FS.h>
-#include <ESP8266WiFi.h>
 //                                  Third Party Libraries
+#include <WebThing.h>
 //                                  Local Includes
 #include "GUIPackage.h"
 //--------------- End:    Includes ---------------------------------------------
@@ -29,7 +28,7 @@ public:
     oled->drawString(GUI::XCenter, 29, GUIPackage::fmtBuf);
 
     snprintf(
-        GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%s", WiFi.localIP().toString().c_str());
+        GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "%s", WebThing::ipAddrAsString().c_str());
     oled->drawString(GUI::XCenter, 42, GUIPackage::fmtBuf);
 
     // snprintf(GUIPackage::fmtBuf, GUIPackage::FmtBufSize, "Something else: %s", someString);

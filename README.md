@@ -24,12 +24,12 @@ The following third party libraries are used within this project:
 * [Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor)
 * [Arduino-Log](https://github.com/thijse/Arduino-Log)
 * [ArduinoJson (v6)](https://github.com/bblanchon/ArduinoJson)
-* [BlynkSimpleEsp8266](https://github.com/blynkkk/blynk-library)
+* [blynk-library](https://github.com/blynkkk/blynk-library)
 * [CircularBuffer](https://github.com/rlogiacco/CircularBuffer)
 * [DHT](https://github.com/adafruit/DHT-sensor-library)†
-* [ESPTemplateProcessor](https://github.com/jpasqua/ESPTemplateProcessor)
+* [ESPTemplateProcessor](https://github.com/jpasqua/ESPTemplateProcessor) [0.0.2 or later for ESP32]
 * [TimeLib](https://github.com/PaulStoffregen/Time.git)
-* [WebThing](https://github.com/jpasqua/WebThing) [version 0.2.0 or later]
+* [WebThing](https://github.com/jpasqua/WebThing) [0.2.0 or later. v0.2.1 or later for ESP32]
 * [esp8266-oled-ssd1306](https://github.com/ThingPulse/esp8266-oled-ssd1306)††
 * [Arduino Temperature Control](https://github.com/milesburton/Arduino-Temperature-Control-Library)†††
 * [OneWire](https://github.com/PaulStoffregen/OneWire)†††
@@ -91,7 +91,7 @@ The primary functional areas of *JAWS* are given below. You don't need to know t
 <a name="building-jaws"></a>
 ## Building JAWS
 
-*JAWS* has been built and tested with Arduino IDE 1.8.10 and ESP8266 cores 2.6.1 and 2.7.1. Newer versions are likely to work, but I haven't tried other specific combinations. If you have never built an Arduino project using an ESP8266, you'll need to [prepare your development environment](https://github.com/esp8266/Arduino#installing-with-boards-manager). 
+*JAWS* has been built and tested with Arduino IDE 1.8.10 and ESP8266 cores 2.6.1 and 2.7.1. Newer versions are likely to work, but I haven't tried other specific combinations. If you have never built an Arduino project using an ESP8266, you'll need to [prepare your development environment](https://github.com/esp8266/Arduino#installing-with-boards-manager). *JAWS* also supports the ESP32, but has minimal testing to date.
 
 ### Hardware
 
@@ -155,12 +155,12 @@ The original housing for this project as well as some others are available on th
 
 <a name="software"></a>
 ### Software
-Building the software for *JAWS* is a bit more complex than a typical application because it stores files on the ESP8266 file system. This means that you need to use a plug-in to the Arduino IDE to upload those files to the Arduino. The file structure is described in detail in the [*WebThing*](https://github.com/jpasqua/WebThing) readme file. In this section I will describe the steps involved.
+Building the software for *JAWS* is a bit more complex than a typical application because it stores files on the ESP8266/ESP32 file system. This means that you need to use a plug-in to the Arduino IDE to upload those files to the Arduino. The file structure is described in detail in the [*WebThing*](https://github.com/jpasqua/WebThing) readme file. In this section I will describe the steps involved.
 
-1. Download and install the [`ESP8266 Sketch Data Upload`](https://github.com/esp8266/arduino-esp8266fs-plugin) plug-in. Note that installing this plugin is not the same as installing a normal Arduino library. Follow the installation instructions [here](https://github.com/esp8266/arduino-esp8266fs-plugin#installation). If you have installed successfully, you will see a new menu item in the Arduino IDE Tools menu. See the screen shot below.
+1. Download and install the [`ESP8266 Sketch Data Upload`](https://github.com/esp8266/arduino-esp8266fs-plugin) plugin. For ESP32, use the [ESP32 Sketch Data Upload plugin](https://github.com/me-no-dev/arduino-esp32fs-plugin) plugin. Note that installing this plugin is not the same as installing a normal Arduino library. Follow the installation instructions [here](https://github.com/esp8266/arduino-esp8266fs-plugin#installation). If you have installed successfully, you will see a new menu item in the Arduino IDE Tools menu. See the screen shot below.
 2. Copy or link the `wt` directory from [*WebThing*](https://github.com/jpasqua/WebThing) `data` directory to the *JAWS* `data` directory. When you're done you'll have a `data` directory that contains a number of `HTML` files and a `wt` subdirectory. The `wt` subdirectory will also contain `HTML` files.
 3. You need to reserve some flash memory space for the file system. In the Tools menu of the Arduino IDE you will see a `Flash Size` submenu. Choose `FS: 1MB`.
-4. Now connect your ESP8266 to your computer via USB and select the `ESP8266 Sketch Data Upload` item from the tools menu. You will see all the files in your `data` directory, including those in the `wt` subdirectory being loaded onto your ESP8266.
+4. Now connect your ESP8266 to your computer via USB and select the `ESP8266 Sketch Data Upload` item from the tools menu. You will see all the files in your `data` directory, including those in the `wt` subdirectory being loaded onto your ESP8266. The process is the same for ESP32, though the specific names/menu items will be different.
 5. Finally you can proceed as usual and compile / upload *JAWS* to your ESP8266.
 
 ![](doc/images/ArduinoToolsMenu.png)
@@ -225,7 +225,6 @@ These settings are common to many network connected devices and are encapsulated
 	* **Latitude, Longitude, Elevation**: In *JAWS*, these are only used to determine your time zone (for this purpose elevation is not important).
 	* **Address** / Geocode: Since you probably don't know your lat/lon and elevation, enter an address in the Address field and press the Geocode button. Assuming you have already saved your Google Maps API key, the address will be translated to lat/lon and elevation. If you prefer not to create a Google Maps key, you can find your lat/lon manually as [described here](https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=en).
 * **Theme Color**: Choose a theme for the Web UI that suits your style. The themes are all from the [W3.CSS](https://www.w3schools.com/w3css/w3css_color_themes.asp) set.
-* **Indicator LED**: Ignore this section. The Indicator LED functionality is not used by *JAWS*.
 
 <a name="configure-jaws"></a>
 ![](doc/images/ConfigureJAWS.png) 
