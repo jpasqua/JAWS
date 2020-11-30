@@ -9,6 +9,7 @@
 #define Config_EmbeddedOLED  2
 #define Config_D1Mini        3
 #define Config_ESP32Mini     4
+#define Config_ESP32WithOLED 5
 
 // An enumeration of allowable values for DISPLAY_DRIVER
 #define SH1106  1
@@ -16,7 +17,7 @@
 // ----- END: Constants used in the rest of the file
 
 // Pick a configuration. Use Config_Custom to define your own
-#define HWConfig Config_EmbeddedOLED
+#define HWConfig Config_ESP32WithOLED
 
 // If there is an attached display for a GUI, set to 1, otherwise 0
 #define HAS_GUI   1
@@ -78,6 +79,30 @@
   #if (HAS_GUI == 1)
     // ----- Display Type
     #define DISPLAY_DRIVER   SH1106
+    static const int DISPLAY_I2C_ADDRESS = 0x3c;
+    // ----- Button
+    static const int BUTTON_PIN = 13;
+    static const int BUTTON_LOW_PIN = -1; // Using a regular ground pin - this isn't needed
+  #endif
+
+#elif (HWConfig == Config_ESP32WithOLED)
+  /*------------------------------------------------------------------------------
+   *
+   * Config Info for ESP32 with embedded 0.96" OLED
+   *
+   *----------------------------------------------------------------------------*/
+  // ----- I2C Settings
+  static const int SDA_PIN = 5;
+  static const int SCL_PIN = 4;
+
+  // ----- Sensors
+  static const int BME_I2C_ADDR = 0x76;
+  static const int DS18B20_PIN = -1;      // -1 to indicate no DS18B20 (which is typical)
+  static const int DHT22_PIN   = -1;      // -1 to indicate no DHT22 (must be a BME280)
+
+  #if (HAS_GUI == 1)
+    // ----- Display Type
+    #define DISPLAY_DRIVER   SSD1306
     static const int DISPLAY_I2C_ADDRESS = 0x3c;
     // ----- Button
     static const int BUTTON_PIN = 13;
